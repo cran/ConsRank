@@ -1178,9 +1178,25 @@ polyplot = function(X=NULL,L=NULL,Wk=NULL,nobj=3){
         
       }
       
-      points(coord[indplot,1],coord[indplot,2],pch=16,cex=sqrt(100*((Wk/sum(Wk))/pi)/2),col="blue")
-          
+      idwk=matrix(0,nrow(X),1)
+      counter=0
+      for (i in 1:13){
+        for (j in 1:nrow(X)){
+          check=sum(pos=X[j,]==ranks[i,])
+          if (check==3){
+            counter=counter+1
+            idwk[counter]=j
+            break}
+        }
+      }
+      
+      
+      
+      
+      points(coord[indplot,1],coord[indplot,2],pch=16,cex=sqrt(100*((Wk[idwk]/sum(Wk))/pi)/2),col="blue")
+      
     }
+
       
     text(tcoord[indplot,],rr[indplot,])
     
@@ -1491,8 +1507,19 @@ polyplot = function(X=NULL,L=NULL,Wk=NULL,nobj=3){
       spheres3d(coord[indplot,],col="blue",radius=0.02)
       
     } else {
+      idwk=matrix(0,nrow(X),1)
+      counter=0
+      for (i in 1:75){
+        for (j in 1:nrow(X)){
+          check=sum(pos=X[j,]==ranks[i,])
+          if (check==4){
+            counter=counter+1
+            idwk[counter]=j
+            break}
+        }
+      }
       
-      spheres3d(coord[indplot,],col="blue",radius=sqrt(((Wk/sum(Wk))/(25*pi))))
+      spheres3d(coord[indplot,],col="blue",radius=sqrt(((Wk[idwk]/sum(Wk))/(25*pi))))
       
     }
     #text(tcoord[indplot,],rr[indplot,])

@@ -39,7 +39,6 @@ Amodio, S., D'Ambrosio, A., & Siciliano, R. (2015). A Fast accurate heuristic al
 \keyword{ package }
 
 \examples{
-ts=proc.time()
 ## load APA data set, full version
 data(APAFULL)
 ## Emond and Mason Branch-and-Bound algorithm. 
@@ -49,7 +48,6 @@ CR=EMCons(APAFULL)
 TR=tabulaterows(APAFULL)
 CR2=FASTcons(TR$X,TR$Wk,maxiter=5)
 CR3=QuickCons(TR$X,TR$Wk)
-proc.time()-ts
 
 #####################################
 ### load sports data set
