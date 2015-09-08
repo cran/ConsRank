@@ -8,7 +8,7 @@ Core function in computing consensus ranking as defined by Emond and Mason (2002
 Core function in computing consensus ranking as defined by Emond and Mason (2002), recalled by EMCons function
 }
 \usage{
-BBconsensus2(RR, cij, Po, PS = TRUE)
+BBconsensus2(RR, cij, Po, PS = TRUE,FULL=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -23,6 +23,9 @@ Current penalty
 }
   \item{PS}{
 If true, it prints the evaluating branches
+}
+  \item{FULL}{
+Default FULL=FALSE. If FULL=TRUE, the searching is limited to the space of complete rankings. TRUE=TRUE if the function is called by BBFULL algorithm. 
 }
 }
 

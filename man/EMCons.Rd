@@ -24,7 +24,7 @@ If PS=TRUE, on the screen some information about how many branches are processed
 }
 }
 \details{
-If the objects to be ranked is large (>15-20), it can take long time to finde the solutions
+If the objects to be ranked is large (>15-20), it can take long time to finde the solutions. If the searching space is limited to the space of full rankings (also incomplete rankings, but without ties), use the function BBFULL or the functions FASTcons and QuickCons with the option FULL=TRUE.
 }
 \value{
 %%  ~Describe the value returned
@@ -45,6 +45,8 @@ Antonio D'Ambrosio <antdambr@unina.it> and Sonia Amodio <sonia.amodio@unina.it>
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
+BBFULL
+
 FASTcons
 
 QuickCons

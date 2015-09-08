@@ -8,7 +8,7 @@ Auxliary code recalled by other routines
 Branches discovery 
 }
 \usage{
-branches(brR, cij, b, Po, ord, Pb)
+branches(brR, cij, b, Po, ord, Pb, FULL=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -31,6 +31,9 @@ Other inputs recalled by main functions
 
   \item{Pb}{
 Other inputs recalled by main functions
+}
+  \item{FULL}{
+Default FULL=FALSE. If FULL=TRUE, the searching is limited to the space of complete rankings. TRUE=TRUE if the function is called by BBFULL algorithm. 
 }
 
 }

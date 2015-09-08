@@ -9,7 +9,7 @@ is a solution, maybe not unique
 Find a first approximation to the consensus ranking.
 }
 \usage{
-BBconsensus(RR, cij)
+BBconsensus(RR, cij, FULL=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -19,6 +19,10 @@ Candidate to be the consensus ranking
   \item{cij}{
 Combined input matrix of the data set
 }
+  \item{FULL}{
+Default FULL=FALSE. If FULL=TRUE, the searching is limited to the space of complete rankings. TRUE=TRUE if the function is called by BBFULL algorithm. 
+}
+
 }
 
 \value{
@@ -29,7 +33,7 @@ Combined input matrix of the data set
 %% ...
 }
 \references{
-Amodio, S., D'Ambrosio, A., & Siciliano, R. (2015). A Fast accurate heuristic algorithm for the consensus ranking problem. Submitted. Technical report available as arXiv preprint arXiv:1502.06498.
+Amodio, S., D'Ambrosio, A. & Siciliano, R (2015). Accurate algorithms for identifying the median ranking when dealing with weak and partial rankings under the Kemeny axiomatic approach. European Journal of Operational Research. DOI: 10.1016/j.ejor.2015.08.048.
 }
 \author{
 Antonio D'Ambrosio <antdambr@unina.it>

@@ -6,14 +6,14 @@
 Compute the Median Ranking(s) According to the Kemeny's Axiomatic Approach
 }
 \description{
-Compute the median ranking according the Kemeny's axiomatic approach. Rankings can or cannot contain ties, rankings can be both complete or incomplete.  
+Compute the median ranking according the Kemeny's axiomatic approach. Rankings can or cannot contain ties, rankings can be both complete or incomplete. 
 }
 \details{
 \tabular{ll}{
 Package: \tab ConsRank\cr
 Type: \tab Package\cr
-Version: \tab 0.0\cr
-Date: \tab 2015-03-26\cr
+Version: \tab 1.0.0\cr
+Date: \tab 2015-09-01\cr
 License: \tab GPL-3\cr
 }
 
@@ -32,7 +32,10 @@ Emond, E. J., & Mason, D. W. (2002). A new rank correlation coefficient with app
 
 Heiser, W. J., & D'Ambrosio, A. (2013). Clustering and prediction of rankings within a Kemeny distance framework. In Algorithms from and for Nature and Life (pp. 19-31). Springer International Publishing.
 
-Amodio, S., D'Ambrosio, A., & Siciliano, R. (2015). A Fast accurate heuristic algorithm for the consensus ranking problem. Submitted. Technical report available as arXiv preprint arXiv:1502.06498.
+Amodio, S., D'Ambrosio, A. & Siciliano, R (2015). Accurate algorithms for identifying the median ranking when dealing with weak and partial rankings under the Kemeny axiomatic approach. European Journal of Operational Research. DOI: 10.1016/j.ejor.2015.08.048.
+
+D'Ambrosio, A., Amodio, S. & Iorio, C. (2015). Two algorithms for finding optimal solutions of the Kemeny rank
+aggregation problem for full rankings. Technical report, University of Naples Federico II. Submitted.
 }
 %~~ Optionally other standard keywords, one per line, from file KEYWORDS in the R ~~
 %~~ documentation directory ~~

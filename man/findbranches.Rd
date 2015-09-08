@@ -8,7 +8,7 @@ Auxiliary function
 Find correct branches in the Branch-and-Bound algorithms
 }
 \usage{
-findbranches(R, ord, b)
+findbranches(R, ord, b, FULL=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -23,6 +23,9 @@ Candidate to be the consensus ranking
   \item{b}{
  other input values recalled by other routines
 
+}
+  \item{FULL}{
+Default FULL=FALSE. If FULL=TRUE, the searching is limited to the space of complete rankings. TRUE=TRUE if the function is called by BBFULL algorithm. 
 }
 }
 \value{

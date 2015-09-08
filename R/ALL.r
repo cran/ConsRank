@@ -31,7 +31,7 @@
 
 
 
-FASTcons = function(X, Wk=NULL, maxiter=50)   {
+FASTcons = function(X, Wk=NULL, maxiter=50, FULL=FALSE)   {
 
   if (class(X)=="data.frame") {
     #colnames(X)=NULL
@@ -68,9 +68,9 @@ if (M==1) {
        R=matrix(sample(1:ncol(X)),1,ncol(X))
        }
 
-  consensus1 = BBconsensus(R,cij)
+  consensus1 = BBconsensus(R,cij, FULL)
   cons=matrix(consensus1$cons,1,ncol(X))
-  consensus = BBconsensus(cons,cij)
+  consensus = BBconsensus(cons,cij, FULL)
   #print(cons)
   #print(R)
   #flush.console()
@@ -138,7 +138,7 @@ if (!is.null(dim(CR))) {
 #
 #
 
-QuickCons = function(X,Wk=NULL)   {
+QuickCons = function(X,Wk=NULL, FULL=FALSE)   {
 
 
 if (class(X)=="data.frame") {
@@ -167,10 +167,10 @@ if (M==1) {
 
   R=findconsensusBB(cij)
   R1=(N+1)-R
-  consensusA = BBconsensus(R,cij)$cons
-  consensusB = BBconsensus(consensusA,cij)$cons
-  consensusC = BBconsensus(R1,cij)$cons
-  consensusD = BBconsensus(consensusC,cij)$cons
+  consensusA = BBconsensus(R,cij,FULL)$cons
+  consensusB = BBconsensus(consensusA,cij,FULL)$cons
+  consensusC = BBconsensus(R1,cij,FULL)$cons
+  consensusD = BBconsensus(consensusC,cij,FULL)$cons
   consensus = unique(reordering(rbind(consensusA,consensusB,consensusC,consensusD)))
   howcons = nrow(consensus)
 
@@ -320,7 +320,7 @@ CI
 
 #-------------------------------------------------------------------------------
 
-BBconsensus = function(RR,cij) {
+BBconsensus = function(RR,cij,FULL=FALSE) {
 
 #Branch and Bound Algorithm to find the the consensus ranking PART I As modified by D'AMBROSIO (2008).
 #Find the first approximation to the consensus ranking. Most of the time CR
@@ -392,7 +392,10 @@ for (k in 2:length(a)) {
       break
       }
       Pc=1
-    R[ord[b[length(b)]]] = R[ord[b[length(b)]]]-1
+      if(FULL==TRUE){
+        R[ord[b[length(b)]]] = R[ord[b[length(b)]]]-1 }else{
+        R[ord[b[length(b)]]] = R[ord[b[length(b)]]]-2
+        }
     if (MI-R[ord[b[length(b)]]] > 1) {
       KO = 0
       }
@@ -571,9 +574,9 @@ return(list(X=tab, Wk=coun, tabfreq=cbind(tab,coun)))
 
 #-------------------------------------------------------------------------------
 
-branches = function(brR,cij,b,Po,ord,Pb) {
+branches = function(brR,cij,b,Po,ord,Pb,FULL=FALSE) {
 
-candidate = findbranches(brR,ord,b)
+candidate = findbranches(brR,ord,b,FULL)
 Pb =matrix( rep(Pb,nrow(candidate)))
 
 CR=mat.or.vec(nrow(candidate),ncol(candidate))
@@ -669,7 +672,7 @@ G
 
 #-------------------------------------------------------------------------------
 
-findbranches = function(R,ord,b) {
+findbranches = function(R,ord,b,FULL=FALSE) {
 
   KR=t(matrix(R[ord[b]]))
   KR=KR[-length(KR)]
@@ -687,7 +690,10 @@ findbranches = function(R,ord,b) {
       if (aa==1){
           candidate=matrix(candidate[-1,],1,ncol(candidate))
       }
-      R[ord[b[length(b)]]]=R[ord[b[length(b)]]]-1
+      if (FULL==FALSE){
+        R[ord[b[length(b)]]]=R[ord[b[length(b)]]]-1 }else{
+          R[ord[b[length(b)]]]=R[ord[b[length(b)]]]-2
+        }
 
       if (MI-R[ord[b[length(b)]]] > 1) {
 
@@ -907,7 +913,7 @@ Penalty = function(CR,cij,indice)   #indice must be order(CR)
 ##Core code for the computation of the consensus ranking. Branch-and-bound 
 ##algorithm by Emond and Mason
           
-BBconsensus2 = function(RR,cij,Po,PS=TRUE) {
+BBconsensus2 = function(RR,cij,Po,PS=TRUE,FULL=FALSE) {
 #Core function in computing consensus ranking
 CR=RR;
 a = t(matrix(sort(RR)))
@@ -936,7 +942,7 @@ while (WCi == 1){
     for (nb in 1:B) { #Secondary loop:  check the branches created by "nb"
                    
       BR.R[nb,] = ReorderingBB(t(matrix(BR.R[nb,])))
-      rpbr=branches(matrix(BR.R[nb,],1,),cij,b,Po,ord,matrix(BR.P[nb]))
+      rpbr=branches(matrix(BR.R[nb,],1,),cij,b,Po,ord,matrix(BR.P[nb]),FULL)
       R=rpbr$cR
       Pbr=rpbr$pcR        
               
@@ -1526,4 +1532,82 @@ polyplot = function(X=NULL,L=NULL,Wk=NULL,nobj=3){
     text3d(coord[indplot,1]+0.1, coord[indplot,2]+0.1, 
            coord[indplot,3]+0.1,rr[indplot,],col=1,cex=0.7)
   }
+}
+
+#----------------------------------------------------------------------------------------
+
+#------------------------------------
+
+BBFULL = function(X,Wk=NULL,PS=TRUE)  {
+  #Branch and Bound algorithm to find median ranking in the space of full rankings
+  #X is a data matrix in which the rows are the judges and the columns indicates the objects
+  #Wk is the vector of weigths
+  if (class(X)=="data.frame") {
+    #colnames(X)=NULL
+    X=as.matrix(X)
+  }
+  
+  
+  
+  M = nrow(X)
+  N=ncol(X)
+  tic = proc.time()[3]
+  if (M==1) {
+    consensus = X
+    TauX = 1
+  } else {
+    if (!is.null(Wk)) {
+      
+      if (is.numeric(Wk)) {
+        Wk=matrix(Wk,ncol=1)
+      }
+      
+      cij = combinpmatr(X,Wk)
+    } else {
+      cij = combinpmatr(X)
+    }
+    R=findconsensusBB(cij)
+    cons1=BBconsensus(R,cij,FULL=TRUE)
+    consensus1=cons1$cons
+    Po=cons1$pen
+    consensus=BBconsensus2(consensus1,cij,Po,PS,FULL=TRUE)
+  }
+  
+  
+  if (nrow(consensus)==1) {
+    
+    Sij=scorematrix(consensus)
+    
+    if (!is.null(Wk)){
+      TauX=sum(cij*Sij) / ( sum(Wk)* (N*(N-1)) )
+    } else {
+      TauX=sum(cij*Sij) / (  M*(N*(N-1)) )
+    }
+    
+  } else {
+    
+    TauX=matrix(0,nrow(consensus),1)
+    
+    for (k in 1:nrow(consensus)) {
+      
+      Sij=scorematrix(t(matrix(consensus[k,])))
+      
+      if (!is.null(Wk)) {
+        
+        TauX[k,1] = sum(cij*Sij) / ( sum(Wk)*(N*(N-1)) )
+        
+      } else {
+        
+        TauX[k,1] = sum(cij*Sij) / (M*(N*(N-1)))
+        
+      }
+      
+    }
+    
+  }
+  toc = proc.time()[3]
+  colnames(consensus)=colnames(X) 
+  #consensus=reordering(consensus)
+  eltime=toc-tic
+  return(list(Consensus=reordering(consensus), Tau=TauX, Eltime=eltime) )
 }
