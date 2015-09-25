@@ -2,7 +2,7 @@ Package: ConsRank
 Type: Package
 Title: Compute the Median Ranking(s) According to the Kemeny's
         Axiomatic Approach
-Version: 1.0.0
+Version: 1.0.1
 Date: 2015-09-01
 Author: Antonio D'Ambrosio <antdambr@unina.it>, Sonia Amodio <sonia.amodio@unina.it>
 Maintainer: Antonio D'Ambrosio <antdambr@unina.it>
@@ -12,5 +12,5 @@ License: GPL-3
 URL: http://www.r-project.org
 Repository: CRAN
 NeedsCompilation: no
-Packaged: 2015-09-08 14:10:24 UTC; An
-Date/Publication: 2015-09-08 16:22:41
+Packaged: 2015-09-24 18:27:01 UTC; An
+Date/Publication: 2015-09-25 00:28:08

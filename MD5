@@ -1,4 +1,4 @@
-bd62099656b3d2b6cd773586074ee2e0 *DESCRIPTION
+ef46263f135d5a6bd7567399d8398350 *DESCRIPTION
 8e4a9ae84400856b29346f7134bc57c6 *NAMESPACE
 2f26528fb420759d1a109048221e7144 *R/ALL.r
 17c7c210b635b501b5fae03c1fe0092e *data/APAFULL.rda
@@ -7,7 +7,7 @@ dea2d4c5fc0c6a32ea30a90dd8c115e3 *data/APAred.rda
 aad52f246f9f7e4c5d3b55f8e7faf832 *data/EMD.rda
 1b40b2cb2710c65aeee8c6f9f19289a3 *data/German.rda
 019050ac5fd0e670b600b7f873946575 *data/Idea.rda
-25f252aae231d35ab6653efa76cab1fe *data/USAranks.rda
+9de12440de6cd04d5467a5fee3742a93 *data/USAranks.rda
 281702f4b3a770bc3a543fc55ee2acb0 *data/sports.rda
 db3b1b31269affdef318b1c4d944d98a *man/APAFULL.Rd
 ae9f09d43fe8e074faef442d60a9e900 *man/APAred.Rd
@@ -15,7 +15,7 @@ ae9f09d43fe8e074faef442d60a9e900 *man/APAred.Rd
 85873b9c48229fd560e1c7f04c4027b7 *man/BBconsensus.Rd
 3756d8887bea690abb45464c64f6238a *man/BBconsensus2.Rd
 31b3598b6279bfb957d4ff24184b7340 *man/BU.Rd
-956f1145155856472b3e5a56564c5cfe *man/ConsRank-package.Rd
+bccd47153f7b228206c828980e17a8be *man/ConsRank-package.Rd
 ba48d6eb16d026bddebdfca1d9c65cfe *man/EMCons.Rd
 ff8331aed401a70f0d27b55e84463894 *man/EMD.Rd
 de11713c4a7916cec5866f280fa1a326 *man/FASTcons.Rd
