@@ -9,7 +9,7 @@ is a solution, maybe not unique
 Find a first approximation to the consensus ranking.
 }
 \usage{
-BBconsensus(RR, cij, FULL=FALSE)
+BBconsensus(RR, cij, FULL=FALSE, PS=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -20,9 +20,11 @@ Candidate to be the consensus ranking
 Combined input matrix of the data set
 }
   \item{FULL}{
-Default FULL=FALSE. If FULL=TRUE, the searching is limited to the space of complete rankings. TRUE=TRUE if the function is called by BBFULL algorithm. 
+Default FULL=FALSE. If FULL=TRUE, the searching is limited to the space of complete rankings. FULL=TRUE if the function is called by BBFULL algorithm. 
 }
-
+  \item{PS}{
+Default PS=FALSE. If PS=TRUE the number of evaluated branches is diplayed
+}
 }
 
 \value{

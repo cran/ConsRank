@@ -2,8 +2,9 @@
 #          library('MASS')
 #
 
-#FAST BRANCH AND BOUND ALGORITHM BY AMODIO, D'AMBROSIO AND SICILIANO (2014)
+#FAST BRANCH AND BOUND ALGORITHM BY AMODIO, D'AMBROSIO AND SICILIANO (2015)
 #Find multiple solutions for the consensus ranking problem.
+
 
 #CR=FASTcons(X,Wk)
 #X is a ranking data matrix (IMPORTANT: IT MUST BE A MATRIX N(JUDGES) X M(OBJECTS)
@@ -31,7 +32,7 @@
 
 
 
-FASTcons = function(X, Wk=NULL, maxiter=50, FULL=FALSE)   {
+FASTcons = function(X, Wk=NULL, maxiter=50, FULL=FALSE, PS=FALSE)   {
 
   if (class(X)=="data.frame") {
     #colnames(X)=NULL
@@ -57,7 +58,11 @@ if (M==1) {
     cij = combinpmatr(X)
   }
 
-
+    if ( sum(cij==0) == nrow(cij)^2 ) {
+      print("Combined Input Matrix contains only zeros: any ranking in the reference universe is a median ranking")
+      return()
+      
+    } 
 
   CR=matrix(0,maxiter,ncol(X))
   for (iter in 1:maxiter) {
@@ -75,6 +80,11 @@ if (M==1) {
   #print(R)
   #flush.console()
   CR[iter,]=matrix(consensus$cons,1,ncol(X))
+  if (PS==TRUE) {
+    
+    dsp1=paste("Iteration",iter,sep=" ")
+    print(dsp1)
+  }
 
   }
 }
@@ -138,7 +148,7 @@ if (!is.null(dim(CR))) {
 #
 #
 
-QuickCons = function(X,Wk=NULL, FULL=FALSE)   {
+QuickCons = function(X,Wk=NULL, FULL=FALSE,PS=FALSE)   {
 
 
 if (class(X)=="data.frame") {
@@ -163,14 +173,20 @@ if (M==1) {
     cij = combinpmatr(X,Wk)
     } else {
     cij = combinpmatr(X)
-  }
+    }
+    
+    if (sum(cij==0)==nrow(cij)^2){
+      print("Combined Input Matrix contains only zeros: any ranking in the reference universe is a median ranking")
+      return()
+      
+    } 
 
   R=findconsensusBB(cij)
   R1=(N+1)-R
-  consensusA = BBconsensus(R,cij,FULL)$cons
-  consensusB = BBconsensus(consensusA,cij,FULL)$cons
-  consensusC = BBconsensus(R1,cij,FULL)$cons
-  consensusD = BBconsensus(consensusC,cij,FULL)$cons
+  consensusA = BBconsensus(R,cij,FULL,PS)$cons
+  consensusB = BBconsensus(consensusA,cij,FULL,PS)$cons
+  consensusC = BBconsensus(R1,cij,FULL,PS)$cons
+  consensusD = BBconsensus(consensusC,cij,FULL,PS)$cons
   consensus = unique(reordering(rbind(consensusA,consensusB,consensusC,consensusD)))
   howcons = nrow(consensus)
 
@@ -239,9 +255,16 @@ if (M==1) {
     cij = combinpmatr(X,Wk)
     } else {
     cij = combinpmatr(X)
-  }
+    }
+    
+    if (sum(cij==0)==nrow(cij)^2){
+      print("Combined Input Matrix contains only zeros: any ranking in the reference universe is a median ranking")
+      return()
+      
+    } 
+    
   R=findconsensusBB(cij)
-  cons1=BBconsensus(R,cij)
+  cons1=BBconsensus(R,cij,PS)
   consensus1=cons1$cons
   Po=cons1$pen
   consensus=BBconsensus2(consensus1,cij,Po,PS)
@@ -320,7 +343,7 @@ CI
 
 #-------------------------------------------------------------------------------
 
-BBconsensus = function(RR,cij,FULL=FALSE) {
+BBconsensus = function(RR,cij,FULL=FALSE,PS=FALSE) {
 
 #Branch and Bound Algorithm to find the the consensus ranking PART I As modified by D'AMBROSIO (2008).
 #Find the first approximation to the consensus ranking. Most of the time CR
@@ -333,12 +356,11 @@ BBconsensus = function(RR,cij,FULL=FALSE) {
 #       CR -> Consensus Ranking
 #
 #
-#References: Emond and Mason, 2002.
+#References: Amodio et al.,2015; D'Ambrosio et al., 2015.
 
 
 CR=RR;
 sij=scorematrix(RR);
-#Po=sum(sum(abs(cij)))-sum(sum(cij.*sij));
 Po = sum(abs(cij))-sum(cij*sij)
 a = t(matrix(sort(RR,decreasing = TRUE)))
 ord = t(matrix(order(RR,decreasing = TRUE)))
@@ -393,14 +415,22 @@ for (k in 2:length(a)) {
       }
       Pc=1
       if(FULL==TRUE){
-        R[ord[b[length(b)]]] = R[ord[b[length(b)]]]-1 }else{
-        R[ord[b[length(b)]]] = R[ord[b[length(b)]]]-2
+        R[ord[b[length(b)]]] = R[ord[b[length(b)]]]-2 }else{
+        R[ord[b[length(b)]]] = R[ord[b[length(b)]]]-1
         }
     if (MI-R[ord[b[length(b)]]] > 1) {
       KO = 0
       }
     aa=aa+1
-    }
+    
+  }
+  
+  if (PS==TRUE) {
+    
+    dsp2=paste("evaluated",nrow(candidate),"branches",sep=" ")
+    print(dsp2)
+    
+  }
 
     if (Pc == 0) {
       break
@@ -782,9 +812,14 @@ for (j in 1:nrow(indici)) {
     X[indici[j,2]]=X[indici[j,2]] + 1
     } else if (sign(cij[indici[j,1],indici[j,2]]) == -1 & sign(cij[indici[j,2],indici[j,1]]) == -1 ) {
     X[indici[j,1]]= NA
+    } else if (sign(cij[indici[j,1],indici[j,2]]) == 1 & sign(cij[indici[j,2],indici[j,1]]) == 1 ){
+    X[indici[j,1]]=X[indici[j,1]]+1
+    X[indici[j,2]]=X[indici[j,2]] + 1
     }
+      
   }
 
+X=(N+1)-X;
 return(X)
 }
 
@@ -1566,6 +1601,13 @@ BBFULL = function(X,Wk=NULL,PS=TRUE)  {
     } else {
       cij = combinpmatr(X)
     }
+    
+    if (sum(cij==0)==nrow(cij)^2){
+      print("Combined Input Matrix contains only zeros: any ranking in the reference universe is a median ranking")
+      return()
+      
+    } 
+    
     R=findconsensusBB(cij)
     cons1=BBconsensus(R,cij,FULL=TRUE)
     consensus1=cons1$cons

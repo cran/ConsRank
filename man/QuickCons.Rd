@@ -8,7 +8,7 @@ Quick algorithm to find up to 4 solutions to the consensus ranking problem
 The Quick algorithm finds up to 4 solutions. Solutions reached are most of the time optimal solutions. 
 }
 \usage{
-QuickCons(X, Wk = NULL, FULL = FALSE)
+QuickCons(X, Wk = NULL, FULL = FALSE, PS=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -21,6 +21,9 @@ Optional: the frequency of each ranking in the data
 }
   \item{FULL}{
 Default FULL=FALSE. If FULL=TRUE, the searching is limited to the space of full rankings. In this case, the data matrix must contain full rankings. 
+}
+  \item{PS}{
+Default PS=FALSE. If PS=TRUE the number of evaluated branches is diplayed
 }
 }
 

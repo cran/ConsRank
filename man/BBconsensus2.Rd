@@ -25,7 +25,7 @@ Current penalty
 If true, it prints the evaluating branches
 }
   \item{FULL}{
-Default FULL=FALSE. If FULL=TRUE, the searching is limited to the space of complete rankings. TRUE=TRUE if the function is called by BBFULL algorithm. 
+Default FULL=FALSE. If FULL=TRUE, the searching is limited to the space of complete rankings. FULL=TRUE if the function is called by BBFULL algorithm. 
 }
 }
 

@@ -8,7 +8,7 @@ FAST algorithm to find consensus (median) ranking according the Kemeny's axionat
 FAST algorithm to find consensus (median) ranking defined by Amodio, D'Ambrosio and Siciliano (2015). It returns at least one of the solutions. If there are multiple solutions, sometimes it returns all the solutions, sometimes it returns some solutions, always it returns at least one solution.
 }
 \usage{
-FASTcons(X, Wk = NULL, maxiter = 50, FULL=FALSE)
+FASTcons(X, Wk = NULL, maxiter = 50, FULL=FALSE, PS=FALSE)
 }
 
 \arguments{
@@ -24,6 +24,9 @@ maximum number of iterations: default = 50.
 }
   \item{FULL}{
 Default FULL=FALSE. If FULL=TRUE, the searching is limited to the space of full rankings. In this case, the data matrix must contain full rankings. 
+}
+  \item{PS}{
+Default PS=FALSE. If PS=TRUE the number of current iteration is diplayed
 }
 }
 
