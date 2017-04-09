@@ -2,15 +2,25 @@ Package: ConsRank
 Type: Package
 Title: Compute the Median Ranking(s) According to the Kemeny's
         Axiomatic Approach
-Version: 1.0.2
-Date: 2015-09-28
-Author: Antonio D'Ambrosio <antdambr@unina.it>, Sonia Amodio <sonia.amodio@unina.it>
+Version: 2.0.0
+Date: 2017-04-07
+Author: Antonio D'Ambrosio <antdambr@unina.it>, Sonia Amodio
+    <sonia.amodio@unina.it>, Giulio Mazzeo <giuliomazzeo@gmail.com>
 Maintainer: Antonio D'Ambrosio <antdambr@unina.it>
-Depends: MASS,proxy,rgl,gtools
-Description: Compute the median ranking according the Kemeny's axiomatic approach. Rankings can or cannot contain ties, rankings can be both complete or incomplete. 
+Depends: proxy,rgl,gtools
+Description: Compute the median ranking according to the Kemeny's axiomatic approach. 
+    Rankings can or cannot contain ties, rankings can be both complete or incomplete. 
+    The package contains both branch-and-bound algorithms and heuristic solutions recently proposed.
+    The package also provide some useful utilities for deal with preference rankings.
+    Essential references:
+    Emond, E.J., and Mason, D.W. (2002) <doi:10.1002/mcda.313>; 
+    D'Ambrosio, A., Amodio, S., and Iorio, C. (2015) <doi:10.1285/i20705948v8n2p198>; 
+    Amodio, S., D'Ambrosio, A., and Siciliano R. (2016) <doi:10.1016/j.ejor.2015.08.048>; 
+    D'Ambrosio, A., Mazzeo, G., Iorio, C., and Siciliano, R. (2017) <doi:10.1016/j.cor.2017.01.017>.
 License: GPL-3
-URL: http://www.r-project.org
+URL: https://www.r-project.org/
 Repository: CRAN
+RoxygenNote: 6.0.1
 NeedsCompilation: no
-Packaged: 2015-09-29 16:37:55 UTC; An
-Date/Publication: 2015-09-29 20:38:03
+Packaged: 2017-04-09 16:11:00 UTC; An
+Date/Publication: 2017-04-09 16:33:25 UTC
