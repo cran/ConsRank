@@ -24,7 +24,8 @@
 BBconsensus2 = function(RR,cij,Po,PS=TRUE,FULL=FALSE) {
   ##Core code for the computation of the consensus ranking. Branch-and-bound 
   ##algorithm by Emond and Mason
-  CR=RR;
+  ForFULL=FULL
+  CR=RR
   a = t(matrix(sort(RR)))
   ord = t(matrix(order(RR)))
   r=ReorderingBB(RR)
@@ -42,8 +43,8 @@ BBconsensus2 = function(RR,cij,Po,PS=TRUE,FULL=FALSE) {
     for (k in 2:ncol(a)) { #primary loop: add the k^th better object ranked
       
       B = nrow(BR.R)    #branches size
-      #print(B)
-      #flush.console()
+#      print(B)
+#      flush.console()
       
       b=1:k
       
@@ -51,9 +52,11 @@ BBconsensus2 = function(RR,cij,Po,PS=TRUE,FULL=FALSE) {
       for (nb in 1:B) { #Secondary loop:  check the branches created by "nb"
         
         BR.R[nb,] = ReorderingBB(t(matrix(BR.R[nb,])))
-        rpbr=branches(matrix(BR.R[nb,],1,),cij,b,Po,ord,matrix(BR.P[nb]),FULL)
+        rpbr=branches(matrix(BR.R[nb,],1,),cij,b,Po,ord,matrix(BR.P[nb]),FULL=ForFULL)
         R=rpbr$cR
-        Pbr=rpbr$pcR        
+        Pbr=rpbr$pcR     
+#        print(nrow(R))
+#        flush.console()
         
         
         if (is.null(R)) {
@@ -118,8 +121,10 @@ BBconsensus2 = function(RR,cij,Po,PS=TRUE,FULL=FALSE) {
         rm(BR.P) #BR.P = NULL  #rm(BR.P)
         BR.R = KR.R
         BR.P = matrix(KR.P)
-        #KR.R = NULL
-        #KR.P = NULL
+        KR.R = NULL
+        KR.P = NULL        
+#        KR.R = NULL
+#        KR.P = NULL
         #rm(JR)  #JR = NULL
         
       }

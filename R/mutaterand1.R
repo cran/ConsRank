@@ -1,4 +1,4 @@
-#' Mutuation phase
+#' Mutation phase
 #'
 #' Creates mutation vector v based on the current population X. We use the
 #' rand/1/bin system
@@ -7,7 +7,7 @@
 #' @param FF scaling factor
 #' @param i population index to be ignored
 #' 
-#' @return the muted vector
+#' @return the mutated vector
 #'
 #' @author Antonio D'Ambrosio \email{antdambr@unina.it} and Giulio Mazzeo \email{giuliomazzeo@gmail.com}
 #' 

@@ -127,7 +127,8 @@ FASTDECOR = function(X,Wk=NULL,maxiter=10,NP=15,L=100,FF=0.4,CR=0.9,FULL=FALSE,P
     }
 
   TauX=matrix(rep(taos),nrow(Consensus),1)
-
+  colnames(Consensus)=colnames(X) 
+  row.names(Consensus)=NULL
   
   
   toc=proc.time()[3]

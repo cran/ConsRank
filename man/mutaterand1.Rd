@@ -2,7 +2,7 @@
 % Please edit documentation in R/mutaterand1.R
 \name{mutaterand1}
 \alias{mutaterand1}
-\title{Mutuation phase}
+\title{Mutation phase}
 \usage{
 mutaterand1(X, FF, i)
 }
@@ -14,7 +14,7 @@ mutaterand1(X, FF, i)
 \item{i}{population index to be ignored}
 }
 \value{
-the muted vector
+the mutated vector
 }
 \description{
 Creates mutation vector v based on the current population X. We use the

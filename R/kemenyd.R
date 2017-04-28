@@ -5,7 +5,7 @@
 #' @param X A N by M data matrix, in which there are N judges and M objects to be judged. Each row is a ranking of the objects which are represented by the columns. If there is only X as input, the output is a square distance matrix
 #' @param Y A row vector, or a n by M data matrix in which there are n judges and the same M objects as X to be judged.
 #'
-#' @return If there is anly X as input, d = square distance matrix. If there is also Y as input, d = matrix with N rows and n columns.
+#' @return If there is only X as input, d = square distance matrix. If there is also Y as input, d = matrix with N rows and n columns.
 #'
 #' @references Kemeny, J. G., & Snell, L. J. (1962). Preference ranking: an axiomatic approach. Mathematical models in the social sciences, 9-23.
 #' 

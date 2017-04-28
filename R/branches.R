@@ -34,34 +34,42 @@ branches = function(brR,cij,b,Po,ord,Pb,FULL=FALSE) {
     CR[gm,]=candidate[gm,]
     addpenalty[gm,]=PenaltyBB2(cij,candidate[gm,],ord[b])
     
-    if (Pb[gm]+addpenalty[gm] > Po) {
+    if ( (Pb[gm]+addpenalty[gm,]) > Po) {
       
-      CR[gm,]=-10.0e+15
-      addpenalty[gm]=-10.0e+15
+#      CR[gm,]=-10.0e+15
+#      addpenalty[gm]=-10.0e+15
+      CR[gm,]=NA
+      addpenalty[gm,]=NA      
       
     }
     QR[gm,]=CR[gm,]
   }
   Pbr=addpenalty+Pb
-  idp=Pbr<0
+#  idp=Pbr<0
+  idp=which(is.na(Pbr))
   
-  if (sum(idp)==0) {
+  if (length(idp)==0) {
     
     R=QR
     
-  } else if (sum(idp==F)==nrow(QR)) {
+  } else if (length(idp)==nrow(QR)) {
     
     Pbr=NULL
     Pb=NULL
     R=NULL
     
   } else {
-    Pbr=t(matrix(Pbr[idp==FALSE,],1))
-    if (sum(idp==F)==1) {
-      R=t(matrix(QR[idp==FALSE,]))
-    } else {
-      R=QR[idp==FALSE,]
-    }
+#    Pbr=t(matrix(Pbr[idp==FALSE,],1))
+#    if (sum(idp==F)==1) {
+#      R=t(matrix(QR[idp==FALSE,]))
+#    } else {
+#      R=QR[idp==FALSE,]
+#    }
+    
+    Pbr=matrix(Pbr[-idp],length(Pbr[-idp]),1)
+    R=QR[-idp,]
+    if (is.null(nrow(R))){R=matrix(R,1,length(R))}
+    
   }
   
   return(list(cR=R,pcR=Pbr))

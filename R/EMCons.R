@@ -49,6 +49,7 @@ EMCons = function(X,Wk=NULL,PS=TRUE)  {
   
   M = nrow(X)
   N=ncol(X)
+  callps=PS
   tic = proc.time()[3]
   if (M==1) {
     consensus = X
@@ -78,10 +79,10 @@ EMCons = function(X,Wk=NULL,PS=TRUE)  {
     }
     
     R=findconsensusBB(cij)
-    cons1=BBconsensus(R,cij,PS)
+    cons1=BBconsensus(R,cij,FULL=FALSE,PS=FALSE)
     consensus1=cons1$cons
     Po=cons1$pen
-    consensus=BBconsensus2(consensus1,cij,Po,PS)
+    consensus=BBconsensus2(consensus1,cij,Po,PS=callps,FULL=FALSE)
   }
   
   

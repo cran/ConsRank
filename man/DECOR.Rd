@@ -37,7 +37,7 @@ constrained to be a full ranking or a tied ranking
 \details{
 It works with a very large number of items to be ranked. Empirically, the number
 of population individuals (the NP parameter) can be set equal to 10, 20 or 30
-for problems till 20, 50 and 100 items. Both scaling rate and vrossover rati (parameters
+for problems till 20, 50 and 100 items. Both scaling rate and crossover ratio (parameters
 FF and CR) must be set by the user. The default options (FF=0.4, CR=0.9) work well
 for a large variety of data sets
 }

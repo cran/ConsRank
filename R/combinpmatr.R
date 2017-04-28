@@ -29,6 +29,8 @@ combinpmatr = function (X,Wk=NULL) {
   if (is.null(Wk)) {
     #X must be data matrix with n judges (on the rows) ranking m objects (on the columns)
     CI=matrix(0,ncol(X), ncol(X))
+    colnames(CI)=colnames(X)
+    row.names(CI)=colnames(X)
     for (i in 1:nrow(X)){
       sm=scorematrix(t(as.matrix(X[i,])))
       CI=CI+sm
@@ -40,6 +42,8 @@ combinpmatr = function (X,Wk=NULL) {
     }
     
     CI=matrix(0,ncol(X), ncol(X))
+    colnames(CI)=colnames(X)
+    row.names(CI)=colnames(X)    
     for (i in 1:nrow(X)){
       sm=scorematrix(t(as.matrix(X[i,])))*Wk[i]
       CI=CI+sm

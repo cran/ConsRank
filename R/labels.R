@@ -68,9 +68,9 @@ labels = function(x, m, label = 1:m, labs ){
     names1 = NULL
     for(j in 1:length(orders)){
       if(length(orders[[j]]) > 1){
-        nams = paste('(', paste(orders[[j]], sep = '', collapse = ''), ')', sep = '', collapse='')
+        nams = paste('(', paste(orders[[j]], sep = '', collapse = ' '), ')', sep = '', collapse='')
       } else {
-        nams = paste(orders[[j]], collapse = '')
+        nams = paste(orders[[j]], collapse = ' ')
       }
       names1 = c(names1, nams)
     }

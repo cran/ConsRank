@@ -12,7 +12,7 @@ kemenyd(X, Y = NULL)
 \item{Y}{A row vector, or a n by M data matrix in which there are n judges and the same M objects as X to be judged.}
 }
 \value{
-If there is anly X as input, d = square distance matrix. If there is also Y as input, d = matrix with N rows and n columns.
+If there is only X as input, d = square distance matrix. If there is also Y as input, d = matrix with N rows and n columns.
 }
 \description{
 Compute the Kemeny distance of a data matrix containing preference rankings, or compute the kemeny distance between two (matrices containing) rankings.

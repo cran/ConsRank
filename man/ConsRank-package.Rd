@@ -12,8 +12,8 @@ Compute the median ranking according to the Kemeny's axiomatic approach. Ranking
 \tabular{ll}{
 Package: \tab ConsRank\cr
 Type: \tab Package\cr
-Version: \tab 2.0.0\cr
-Date: \tab 2017-04-03\cr
+Version: \tab 2.0.1\cr
+Date: \tab 2017-04-28\cr
 License: \tab GPL-3\cr
 }
 

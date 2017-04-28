@@ -1,4 +1,4 @@
-#' Score matrix according Emond and Mason (2002)
+#' Score matrix according Kemeny (1962)
 #'
 #' Given a ranking, it computes the score matrix as defined by Emond and Mason (2002)
 #'
@@ -8,24 +8,25 @@
 #'
 #' @examples
 #' Y = matrix(c(1,3,5,4,2),1,5)
-#' SM=scorematrix(Y)
+#' SM=kemenyscore(Y)
 #' #
-#' Z=c(1,2,4,3)
-#' SM2=scorematrix(Z)
+#' Z=c(1,2,3,2)
+#' SM2=kemenyscore(Z)
 #' 
 #' @author Antonio D'Ambrosio \email{antdambr@unina.it}
 #' 
-#' @references Emond, E. J., and Mason, D. W. (2002). A new rank correlation coefficient with application to the consensus ranking problem. Journal of Multi-Criteria Decision Analysis, 11(1), 17-28.
+#' @references Kemeny, J and Snell, L. (1962). Mathematical models in the social sciences.
 #' 
-#' @seealso \code{\link{combinpmatr}} The combined inut matrix
+#' @seealso \code{\link{scorematrix}} The score matrix as defined by Emond and Mason (2002)
 #' 
 #' @export
 
-scorematrix = function (X) {
+kemenyscore = function (X) {
   
-  ### SCORE MATRIX OF RANK DATA ACCORDING EMOND AND MASON
+  ### SCORE MATRIX OF RANK DATA ACCORDING TO KEMENY
   
   itemnames=names(X)
+  
   if (is.numeric(X) & !is.matrix(X)){
     X=matrix(X,ncol=length(X))
   }
@@ -35,17 +36,15 @@ scorematrix = function (X) {
   #X must be a row vector containing a ranking of m objects
   sm=matrix(0,c,c)
   colnames(sm)=itemnames
-  row.names(sm)=itemnames
+  row.names(sm)=itemnames  
   
   for (j in 1:c){
-    diffs=sign(X[j]-X[setdiff(1:c,j)])
+    diffs=sign(X[j]-X[setdiff(1:c,j)])*-1
     ind=setdiff(1:c,j)
     sm[j,ind]=diffs
   }
   
-  idn=is.na(sm)
-  sm=((sm<=0)*2-1)-diag(c)
-  sm[idn]=0
+  #sm=((sm<=0)*2-1)-diag(c)
   sm
 }
 

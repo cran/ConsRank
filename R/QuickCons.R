@@ -39,6 +39,9 @@ QuickCons = function(X,Wk=NULL, FULL=FALSE,PS=FALSE)   {
     X=as.matrix(X)
   }
   
+  callfull=FULL
+  callps=PS
+  
   M = nrow(X)
   N=ncol(X)
   tic = proc.time()[3]
@@ -72,10 +75,10 @@ QuickCons = function(X,Wk=NULL, FULL=FALSE,PS=FALSE)   {
     
     R=findconsensusBB(cij)
     R1=(N+1)-R
-    consensusA = BBconsensus(R,cij,FULL,PS)$cons
-    consensusB = BBconsensus(consensusA,cij,FULL,PS)$cons
-    consensusC = BBconsensus(R1,cij,FULL,PS)$cons
-    consensusD = BBconsensus(consensusC,cij,FULL,PS)$cons
+    consensusA = BBconsensus(R,cij,FULL=callfull,PS=callps)$cons
+    consensusB = BBconsensus(consensusA,cij,FULL=callfull,PS=callps)$cons
+    consensusC = BBconsensus(R1,cij,FULL=callfull,PS=callps)$cons
+    consensusD = BBconsensus(consensusC,cij,FULL=callfull,PS=callps)$cons
     consensus = unique(reordering(rbind(consensusA,consensusB,consensusC,consensusD)))
     howcons = nrow(consensus)
     

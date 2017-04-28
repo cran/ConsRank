@@ -35,13 +35,12 @@ BBconsensus = function(RR,cij,FULL=FALSE,PS=FALSE) {
   #
   #References: Amodio et al.,2015; D'Ambrosio et al., 2016.
   
-  
-  CR=RR;
-  sij=scorematrix(RR);
+  CR=RR
+  sij=scorematrix(RR)
   Po = sum(abs(cij))-sum(cij*sij)
   a = t(matrix(sort(RR,decreasing = TRUE)))
   ord = t(matrix(order(RR,decreasing = TRUE)))
-  R=RR;
+  R=RR
   addpenalty=matrix(0,length(a),1)
   
   # exploration of the initial solution
@@ -55,7 +54,7 @@ BBconsensus = function(RR,cij,FULL=FALSE,PS=FALSE) {
     MI=min(KR)
     aa=1
     KO=1
-    KR[length(KR)+1]=MO+1;
+    KR[length(KR)+1]=MO+1
     R[ord[b]]=KR
     candidate=matrix(0,nrow(RR), ncol(RR))
     Pb = matrix(0, 1, 1)
@@ -134,8 +133,7 @@ BBconsensus = function(RR,cij,FULL=FALSE,PS=FALSE) {
   if (Pc==0) {
     Po=0
     addpenalty = 0
-  }
-  else {
+  }  else {
     Poo=sum(addpenalty)
   }
   
