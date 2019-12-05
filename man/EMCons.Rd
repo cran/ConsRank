@@ -24,7 +24,8 @@ Eltime\tab   \tab Elapsed time in seconds}
 Branch-and-bound algorithm to find consensus ranking as definned by Emond and Mason (2002). If the number of objects to be ranked is large (greater than 15 or 20, specially if there are missing rankings), it can work for very long time.
 }
 \details{
-If the objects to be ranked is large (>15-20) with some missing, it can take long time to find the solutions. If the searching space is limited to the space of full rankings (also incomplete rankings, but without ties), use the function BBFULL or the functions FASTcons and QuickCons with the option FULL=TRUE.
+This function is deprecated and it will be removed in the 
+next release of the package. Use function 'consrank' instead.
 }
 \examples{
 data(Idea)
@@ -38,11 +39,7 @@ CR=EMCons(RevIdea)
 Emond, E. J., and Mason, D. W. (2002). A new rank correlation coefficient with application to the consensus ranking problem. Journal of Multi-Criteria Decision Analysis, 11(1), 17-28.
 }
 \seealso{
-\code{\link{FASTcons}} FAST algorithm algorithm.
-
-\code{\link{QuickCons}} Quick algorithm.
-
-\code{\link{BBFULL}} Branc-and-bound algorithm for full rankings.
+\code{\link{consrank}}
 }
 \author{
 Antonio D'Ambrosio \email{antdambr@unina.it}

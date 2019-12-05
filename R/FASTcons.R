@@ -8,6 +8,9 @@
 #' @param FULL Default FULL=FALSE. If FULL=TRUE, the searching is limited to the space of full rankings. 
 #' @param PS Default PS=FALSE. If PS=TRUE the number of current iteration is diplayed
 #' 
+#' @details This function is deprecated and it will be removed in the 
+#' next release of the package. Use function 'consrank' instead.
+#' 
 #' @return a "list" containing the following components:
 #' \tabular{lll}{
 #' Consensus \tab  \tab the Consensus Ranking\cr
@@ -22,7 +25,7 @@
 #' ##These lines produce all the three solutions in less than a minute.
 #'
 #' data(sports)
-#' CR=FASTcons(sports,maxiter=10)
+#' CR=FASTcons(sports,maxiter=5)
 #' 
 #' @author Antonio D'Ambrosio \email{antdambr@unina.it} and Sonia Amodio \email{sonia.amodio@unina.it}
 #' 
@@ -36,94 +39,9 @@
 #' @export
 
 
-FASTcons = function(X, Wk=NULL, maxiter=50, FULL=FALSE, PS=FALSE)   {
+FASTcons <- function(X, Wk=NULL, maxiter=50, FULL=FALSE, PS=FALSE) {
+  .Deprecated(msg = "'FASTcons' will be removed in the release of the package")
+  out=consrank(X,wk=Wk,ps=PS,algorithm="fast",itermax=maxiter)
+  return(out)
   
-  
-  if (class(X)=="data.frame") {
-    #colnames(X)=NULL
-    X=as.matrix(X)
-  }
-  
-  M = nrow(X)
-  N=ncol(X)
-  
-  tic = proc.time()[3]
-  if (M==1) {
-    CR = X
-    Taux = 1
-  } else {
-    if (!is.null(Wk)) {
-      
-      if (is.numeric(Wk)) {
-        Wk=matrix(Wk,ncol=1)
-      }
-      
-      cij = combinpmatr(X,Wk)
-    } else {
-      cij = combinpmatr(X)
-    }
-    
-    if (sum(cij==0)==length(cij)){
-      print("Combined Input Matrix contains only zeros: any ranking in the reference universe is a median ranking")
-      return()
-      
-    } 
-    
-    if (sum(sign(cij+diag(N)))==length(cij)){
-      print("Combined Input Matrix contains only positive values: the median ranking is the all-tie solution")
-      return()
-      
-    } 
-    
-    CR=matrix(0,maxiter,ncol(X))
-    for (iter in 1:maxiter) {
-      
-      if (iter%%2==0) {
-        R=matrix(sample(1:ncol(X),replace=T),1,ncol(X))
-      } else {
-        R=matrix(sample(1:ncol(X)),1,ncol(X))
-      }
-      
-      consensus1 = BBconsensus(R,cij, FULL)
-      cons=matrix(consensus1$cons,1,ncol(X))
-      consensus = BBconsensus(cons,cij, FULL)
-      #print(cons)
-      #print(R)
-      #flush.console()
-      CR[iter,]=matrix(consensus$cons,1,ncol(X))
-      if (PS==TRUE) {
-        
-        dsp1=paste("Iteration",iter,sep=" ")
-        print(dsp1)
-      }
-      
-    }
-  }
-  #d=kemenyd(X,consensus$cons)
-  
-  Taux=matrix(0,nrow(CR),1)
-  for (k in 1:nrow(CR)) {
-    Sij=scorematrix(matrix(CR[k,],1,ncol(X)))
-    if (!is.null(Wk)){
-      Taux[k,]=sum(cij*Sij) / ( sum(Wk)* (N*(N-1)) )
-    } else {
-      Taux[k,]=sum(cij*Sij) / (  M*(N*(N-1)) )
-    }
-  }
-  
-  CR=reordering(CR)
-  indice=which(Taux==max(Taux));
-  Taux=max(Taux)
-  CR=matrix(CR[indice,],ncol=N)
-  if (nrow(CR>1)){
-    CR=unique(CR)
-  }
-  if (!is.null(dim(CR))) {
-    Taux=matrix(rep(Taux,nrow(CR)))
-  }
-  
-  colnames(CR)=colnames(X) 
-  toc = proc.time()[3]
-  eltime=toc-tic
-  return(list(Consensus=CR, Tau=Taux, Eltime=eltime) )
 }

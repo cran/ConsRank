@@ -7,11 +7,11 @@
 #' @return the M by M score matrix
 #'
 #' @examples
-#' Y = matrix(c(1,3,5,4,2),1,5)
-#' SM=scorematrix(Y)
+#' Y <- matrix(c(1,3,5,4,2),1,5)
+#' SM<-scorematrix(Y)
 #' #
-#' Z=c(1,2,4,3)
-#' SM2=scorematrix(Z)
+#' Z<-c(1,2,4,3)
+#' SM2<-scorematrix(Z)
 #' 
 #' @author Antonio D'Ambrosio \email{antdambr@unina.it}
 #' 
@@ -21,31 +21,31 @@
 #' 
 #' @export
 
-scorematrix = function (X) {
+scorematrix <- function (X) {
   
   ### SCORE MATRIX OF RANK DATA ACCORDING EMOND AND MASON
   
-  itemnames=names(X)
-  if (is.numeric(X) & !is.matrix(X)){
-    X=matrix(X,ncol=length(X))
+  itemnames<-names(X)
+  if (is(X,"numeric") & !is(X,"matrix")){
+    X<-matrix(X,ncol=length(X))
   }
   
-  c=ncol(X)
+  c<-ncol(X)
   
   #X must be a row vector containing a ranking of m objects
-  sm=matrix(0,c,c)
-  colnames(sm)=itemnames
-  row.names(sm)=itemnames
+  sm<-matrix(0,c,c)
+  colnames(sm)<-itemnames
+  row.names(sm)<-itemnames
   
   for (j in 1:c){
-    diffs=sign(X[j]-X[setdiff(1:c,j)])
-    ind=setdiff(1:c,j)
-    sm[j,ind]=diffs
+    diffs<-sign(X[j]-X[setdiff(1:c,j)])
+    ind<-setdiff(1:c,j)
+    sm[j,ind]<-diffs
   }
   
-  idn=is.na(sm)
-  sm=((sm<=0)*2-1)-diag(c)
-  sm[idn]=0
+  idn<-is.na(sm)
+  sm<-((sm<=0)*2-1)-diag(c)
+  sm[idn]<-0
   sm
 }
 

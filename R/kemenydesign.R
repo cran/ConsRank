@@ -14,22 +14,22 @@
 #' 
 #' @import gtools
 
-kemenydesign = function(X) {
+kemenydesign <- function(X) {
   
   #Compute the design matrix to compute Kemeny distance
   
-  if (is.numeric(X) & !is.matrix(X)) {
-    X=matrix(X,ncol=length(X))
+  if (is(X,"numeric") & !is(X,"matrix")) {
+    X<-matrix(X,ncol=length(X))
   }
   
   
   
-  M = ncol(X)
-  N = nrow(X)
-  indice=combinations(M,2)
-  KX=mat.or.vec(N,(M*(M-1)/2) )
+  M <- ncol(X)
+  N <- nrow(X)
+  indice<-combinations(M,2)
+  KX<-mat.or.vec(N,(M*(M-1)/2) )
   for (j in 1:nrow(indice)) {
-    KX[,j]=sign(X[,indice[j,1]] - X[,indice[j,2]])*-1
+    KX[,j]<-sign(X[,indice[j,1]] - X[,indice[j,2]])*-1
   }
   KX
 }

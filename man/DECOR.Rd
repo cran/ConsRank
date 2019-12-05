@@ -4,8 +4,7 @@
 \alias{DECOR}
 \title{Differential Evolution algorithm for Median Ranking}
 \usage{
-DECOR(X, Wk = NULL, NP = 15, L = 100, FF = 0.4, CR = 0.9,
-  FULL = FALSE)
+DECOR(X, Wk = NULL, NP = 15, L = 100, FF = 0.4, CR = 0.9, FULL = FALSE)
 }
 \arguments{
 \item{X}{A N by M data matrix, in which there are N judges and M objects to be judged. Each row is a ranking of the objects which are represented by the columns. Alternatively X can contain the rankings observed only once. In this case the argument Wk must be used}
@@ -35,26 +34,20 @@ It works with full, tied and partial rankings. The solution con be
 constrained to be a full ranking or a tied ranking
 }
 \details{
-It works with a very large number of items to be ranked. Empirically, the number
-of population individuals (the NP parameter) can be set equal to 10, 20 or 30
-for problems till 20, 50 and 100 items. Both scaling rate and crossover ratio (parameters
-FF and CR) must be set by the user. The default options (FF=0.4, CR=0.9) work well
-for a large variety of data sets
+This function is deprecated and it will be removed in the 
+next release of the package. Use function 'consrank' instead.
 }
 \examples{
-data(EMD)
-CR=DECOR(EMD[,1:15],EMD[,16])
+#not run
+#data(EMD)
+#CR=DECOR(EMD[,1:15],EMD[,16])
 
 }
 \references{
 D'Ambrosio, A., Mazzeo, G., Iorio, C., and Siciliano, R. (2017). A differential evolution algorithm for finding the median ranking under the Kemeny axiomatic approach. Computers and Operations Research, vol. 82, pp. 126-138.
 }
 \seealso{
-\code{\link{FASTcons}} FAST algorithm.
-
-\code{\link{QuickCons}} Quick algorithm.
-
-\code{\link{EMCons}} Branch-and-bound algorithm.
+\code{\link{consrank}}
 }
 \author{
 Antonio D'Ambrosio \email{antdambr@unina.it} and Giulio Mazzeo \email{giuliomazzeo@gmail.com}

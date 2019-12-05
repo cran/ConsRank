@@ -31,6 +31,10 @@ FAST algorithm to find consensus (median) ranking.
  
 FAST algorithm to find consensus (median) ranking defined by Amodio, D'Ambrosio and Siciliano (2016). It returns at least one of the solutions. If there are multiple solutions, sometimes it returns all the solutions, sometimes it returns some solutions, always it returns at least one solution.
 }
+\details{
+This function is deprecated and it will be removed in the 
+next release of the package. Use function 'consrank' instead.
+}
 \examples{
 ##data(EMD)
 ##X=EMD[,1:15]
@@ -39,7 +43,7 @@ FAST algorithm to find consensus (median) ranking defined by Amodio, D'Ambrosio 
 ##These lines produce all the three solutions in less than a minute.
 
 data(sports)
-CR=FASTcons(sports,maxiter=10)
+CR=FASTcons(sports,maxiter=5)
 
 }
 \references{

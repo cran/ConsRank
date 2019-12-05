@@ -12,45 +12,45 @@
 
 
 
-reordering = function (X) {
+reordering <- function (X) {
   
   if (nrow(X)==1) {
-    G=X
-    OX = order(X)
-    SX=matrix(sort(X),nrow=1)
-    SX=SX-min(SX)+1
-    DC=rbind(0,diff(t(SX)))
+    G<-X
+    OX <- order(X)
+    SX<-matrix(sort(X),nrow=1)
+    SX<-SX-min(SX)+1
+    DC<-rbind(0,diff(t(SX)))
     
     
     for (i in 1:(ncol(X)-1)) {
       if (DC[i+1,1] >= 1) {
-        SX[1,i+1]=SX[1,i]+1
+        SX[1,i+1]<-SX[1,i]+1
       } else if (DC[i+1,1] == 0) {
-        SX[1,i+1]=SX[1,i]
+        SX[1,i+1]<-SX[1,i]
       }
     }
     
-    G[1,OX]=SX
+    G[1,OX]<-SX
     
   } else {
     
-    G=X
+    G<-X
     for (j in 1:nrow(X)) {
       
-      OX = order(X[j,])
-      SX=matrix(sort(X[j,]),nrow=1)
-      SX=SX-min(SX)+1
-      DC=rbind(0,diff(t(SX)))
+      OX <- order(X[j,])
+      SX<-matrix(sort(X[j,]),nrow=1)
+      SX<-SX-min(SX)+1
+      DC<-rbind(0,diff(t(SX)))
       
       for (i in 1:(ncol(X)-1)) {
         
         if (DC[i+1,1] >= 1) {
-          SX[1,i+1]=SX[1,i]+1
+          SX[1,i+1]<-SX[1,i]+1
         } else if (DC[i+1,1] == 0) {
-          SX[1,i+1]=SX[1,i]
+          SX[1,i+1]<-SX[1,i]
         }
       }
-      G[j,OX]=SX
+      G[j,OX]<-SX
     }
     
   }

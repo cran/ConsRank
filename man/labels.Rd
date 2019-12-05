@@ -13,13 +13,18 @@ labels(x, m, label = 1:m, labs)
 
 \item{label}{optional: the name of the objects}
 
-\item{labs}{labs = 1 displays the names of the objects if there is argument "label", otherwise displays the permutation of first m integer. labs = 2 is to be used only if the argument "label" is not defined. In such a case it displays the permutation of the first m letters}
+\item{labs}{labs = 1 displays the names of the objects if there is argument "label", otherwise displays the permutation of first m integer.
+labs = 2 is to be used only if the argument "label" is not defined. In such a case it displays the permutation of the first m letters}
 }
 \value{
 the ordering
 }
 \description{
 Given a ranking (or a matrix of rank data), transforms it into an ordering (or a ordering matrix)
+}
+\details{
+This function is deprecated and it will be removed in the 
+next release of the package. Use function 'rank2order' instead.
 }
 \examples{
 data(Idea)
@@ -29,6 +34,9 @@ Ord2=labels(TR$X,ncol(Idea),labs=2)
 cbind(Ord,TR$Wk)
 cbind(Ord2,TR$Wk)
 
+}
+\seealso{
+\code{\link{rank2order}}
 }
 \author{
 Sonia Amodio \email{sonia.amodio@unina.it}

@@ -11,14 +11,14 @@
 #' 
 #' @author Antonio D'Ambrosio \email{antdambr@unina.it}
 #' 
-#' @seealso \code{\link{Tau_X}} TauX rank correlation coefficient
+#' @seealso \code{\link{tau_x}} TauX rank correlation coefficient
 #' 
 #' @examples
 #' data(Idea)
-#' RevIdea=6-Idea ##as 5 means "most associated", it is necessary compute the reverse 
+#' RevIdea<-6-Idea ##as 5 means "most associated", it is necessary compute the reverse 
 #' #ranking of each rankings to have rank 1 = "most associated" and rank 5 = "least associated"
-#' KD=kemenyd(RevIdea)
-#' KD2=kemenyd(RevIdea[1:10,],RevIdea[55,])
+#' KD<-kemenyd(RevIdea)
+#' KD2<-kemenyd(RevIdea[1:10,],RevIdea[55,])
 #' 
 #' @keywords Kemeny distance
 #' 
@@ -27,27 +27,27 @@
 #' @import proxy
 
 
-kemenyd = function(X,Y=NULL) {
+kemenyd <- function(X,Y=NULL) {
   
   ##Kemeny Distance
   
-  if (is.numeric(X) & !is.matrix(X)) {
-    X=matrix(X,ncol=length(X))
+  if (is(X,"numeric") & !is(X,"matrix")) {
+    X<-matrix(X,ncol=length(X))
   }
   
-  if (is.null(Y)) {
-    X = kemenydesign(X)
-    d=dist(X,"manhattan")
+  if (is(Y,"NULL")) {
+    X <- kemenydesign(X)
+    d<-dist(X,"manhattan")
   } else {
     
-    if (is.numeric(Y) & !is.matrix(Y)) {
-      Y=matrix(Y,ncol=length(Y))
+    if (is(Y,"numeric") & !is(Y,"matrix")) {
+      Y<-matrix(Y,ncol=length(Y))
     }
     
     
-    X=kemenydesign(X)
-    Y=kemenydesign(Y)
-    d=dist(X,Y,"manhattan")
+    X<-kemenydesign(X)
+    Y<-kemenydesign(Y)
+    d<-dist(X,Y,"manhattan")
   }
   d
 }

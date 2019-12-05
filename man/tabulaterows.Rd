@@ -23,26 +23,28 @@ Given a sample of preference rankings, it compute the frequency associated to ea
 }
 \examples{
 data(Idea)
-TR=tabulaterows(Idea)
-FR=TR$Wk/sum(TR$Wk)
-RF=cbind(TR$X,FR)
-colnames(RF)=c(colnames(Idea),"fi")
+TR<-tabulaterows(Idea)
+FR<-TR$Wk/sum(TR$Wk)
+RF<-cbind(TR$X,FR)
+colnames(RF)<-c(colnames(Idea),"fi")
 #compute modal ranking
-maxfreq=which(RF[,6]==max(RF[,6]))
-labels(RF[maxfreq,1:5],5,colnames(Idea),labs=1)
+maxfreq<-which(RF[,6]==max(RF[,6]))
+rank2order(RF[maxfreq,1:5],items=colnames(Idea))
 #
 data(APAred)
-TR=tabulaterows(APAred)
+TR<-tabulaterows(APAred)
 #
 data(APAFULL)
-TR=tabulaterows(APAFULL)
-CR1=EMCons(TR$X,TR$Wk)
-CR2=FASTcons(TR$X,TR$Wk,maxiter=15)
-CR3=QuickCons(TR$X,TR$Wk)
+TR<-tabulaterows(APAFULL)
+CR1<-consrank(TR$X,wk=TR$Wk)
+CR2<-consrank(TR$X,wk=TR$Wk,algorithm="fast",itermax=15)
+CR3<-consrank(TR$X,wk=TR$Wk,algorithm="quick")
 
 }
 \author{
-Sonia Amodio \email{sonia.amodio@unina.it}
+Antonio D'Ambrosio \email{antdambr@unina.it}
 }
-\keyword{modal}
-\keyword{ranking}
+\keyword{frequency}
+\keyword{of}
+\keyword{rankings}
+\keyword{table}

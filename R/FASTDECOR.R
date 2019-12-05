@@ -12,6 +12,9 @@
 #' @param CR The crossover range. Must be in [0,1]
 #' @param FULL Default FULL=FALSE. If FULL=TRUE, the searching is limited to the space of full rankings. In this case, the data matrix must contain full rankings.
 #' @param PS Default PS=TRUE. If PS=TRUE the number of a multiple of 5 iterations is diplayed
+#' 
+#' @details This function is deprecated and it will be removed in the 
+#' next release of the package. Use function 'consrank' instead.
 #'
 #' @return a "list" containing the following components:
 #' \tabular{lll}{
@@ -23,6 +26,8 @@
 #' 
 #' @author Antonio D'Ambrosio \email{antdambr@unina.it} and Giulio Mazzeo \email{giuliomazzeo@gmail.com}
 #' 
+#' @seealso \code{\link{consrank}}
+#' 
 #' @examples 
 #' #data(EMD)
 #' #CR=FASTDECOR(EMD[,1:15],EMD[,16])
@@ -33,105 +38,9 @@
 #' @export
 
 
-FASTDECOR = function(X,Wk=NULL,maxiter=10,NP=15,L=100,FF=0.4,CR=0.9,FULL=FALSE,PS=TRUE){
+FASTDECOR <- function(X,Wk=NULL,maxiter=10,NP=15,L=100,FF=0.4,CR=0.9,FULL=FALSE,PS=TRUE) {
+  .Deprecated(msg = "'FASTDECOR' will be removed in the next release of the package")
+  out=consrank(X,wk=Wk,ps=PS,algorithm="decor",full=FULL,itermax=maxiter,np=NP,gl=L,ff=FF,cr=CR)   
+  return(out)
   
-  #check if X is a matrix
-  if (class(X)=="data.frame") {
-    #colnames(X)=NULL
-    X=as.matrix(X)
-  }
-  
-  M = nrow(X)
-  N=ncol(X)
-  tic = proc.time()[3]  
-  
-  #check if there are trivial solutions
-  
-  if (M==1) { 
-    consensus = X
-    TauX = 1
-    
-  } else {
-    
-    if (!is.null(Wk)) {
-      
-      if (is.numeric(Wk)) {
-        Wk=matrix(Wk,ncol=1)
-        NJ=sum(Wk)
-      }
-      
-      cij = combinpmatr(X,Wk)
-      
-    } else {
-      
-      cij = combinpmatr(X)
-      NJ=nrow(X)
-    }
-    
-    
-    if (sum(cij==0)==length(cij)){
-      print("Combined Input Matrix contains only zeros: any ranking in the reference universe is a median ranking")
-      return()
-      
-    } 
-    
-    if (sum(sign(cij+diag(N)))==length(cij)){
-      print("Combined Input Matrix contains only positive values: the median ranking is the all-tie solution")
-      return()
-      
-    }
-    
-    
-    sol=matrix(0,1,N)
-    taos=0
-    
-    for (iter in 1:maxiter){
-    COR=DECORcore(cij,NJ,NP,L,FF,CR,FULL)
-    
-    sol=rbind(sol,COR$ConsR)
-    taos=rbind(taos,COR$Tau)
-    
-    if (PS==TRUE) {
-      
-      if (iter%%5==0){
-      
-      dsp1=paste("Iteration",iter,sep=" ")
-      print(dsp1)
-      }
-      
-    }
-
-    
-    }
-    
-  }
-  
-  sol=sol[-1,]
-  taos=matrix(taos[-1],(length(taos)-1),1)
-  
-  if (is.null(nrow(sol))){sol=matrix(sol,1,N)}
-  
-  bestindex=which(taos==max(taos))
-  sol=sol[bestindex,]
-  taos=max(taos)
-  
-  if (is.null(nrow(sol))){
-    sol=matrix(sol,1,N)
-    Consensus=sol
-  } else {
-    Consensus=unique(sol)
-  }
-  
-  if (is.null(nrow(Consensus))){
-    Consensus=matrix(Consensus,1,N)
-    }
-
-  TauX=matrix(rep(taos),nrow(Consensus),1)
-  colnames(Consensus)=colnames(X) 
-  row.names(Consensus)=NULL
-  
-  
-  toc=proc.time()[3]
-  eltime=toc-tic
-  return(list(Consensus=reordering(Consensus), Tau=TauX, Eltime=eltime) )
 }

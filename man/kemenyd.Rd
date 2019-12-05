@@ -19,17 +19,17 @@ Compute the Kemeny distance of a data matrix containing preference rankings, or 
 }
 \examples{
 data(Idea)
-RevIdea=6-Idea ##as 5 means "most associated", it is necessary compute the reverse 
+RevIdea<-6-Idea ##as 5 means "most associated", it is necessary compute the reverse 
 #ranking of each rankings to have rank 1 = "most associated" and rank 5 = "least associated"
-KD=kemenyd(RevIdea)
-KD2=kemenyd(RevIdea[1:10,],RevIdea[55,])
+KD<-kemenyd(RevIdea)
+KD2<-kemenyd(RevIdea[1:10,],RevIdea[55,])
 
 }
 \references{
 Kemeny, J. G., & Snell, L. J. (1962). Preference ranking: an axiomatic approach. Mathematical models in the social sciences, 9-23.
 }
 \seealso{
-\code{\link{Tau_X}} TauX rank correlation coefficient
+\code{\link{tau_x}} TauX rank correlation coefficient
 }
 \author{
 Antonio D'Ambrosio \email{antdambr@unina.it}

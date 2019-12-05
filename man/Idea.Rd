@@ -17,7 +17,7 @@ Fligner, M. A., & Verducci, J. S. (1986). Distance based ranking models. Journal
 data(Idea)
 revIdea=6-Idea
 TR=tabulaterows(revIdea)
-CR=QuickCons(TR$X,TR$Wk)
+CR=consrank(TR$X,wk=TR$Wk,algorithm="quick")
 colnames(CR$Consensus)=colnames(Idea)
 
 }

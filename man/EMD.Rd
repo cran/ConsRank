@@ -18,7 +18,7 @@ Emond, E. J., & Mason, D. W. (2000). A new technique for high level decision sup
 }
 \examples{
 data(EMD)
-CR=QuickCons(EMD[,1:15],EMD[,16])
+CR=consrank(EMD[,1:15],EMD[,16],algorithm="quick")
 
 }
 \keyword{datasets}

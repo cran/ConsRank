@@ -25,6 +25,10 @@ Eltime\tab   \tab Elapsed time in seconds}
 \description{
 The Quick algorithm finds up to 4 solutions. Solutions reached are most of the time optimal solutions.
 }
+\details{
+This function is deprecated and it will be removed in the 
+next release of the package. Use function 'consrank' instead.
+}
 \examples{
 data(EMD)
 CR=QuickCons(EMD[,1:15],EMD[,16])
@@ -34,12 +38,10 @@ CR=QuickCons(EMD[,1:15],EMD[,16])
 Amodio, S., D'Ambrosio, A. and Siciliano, R. (2016). Accurate algorithms for identifying the median ranking when dealing with weak and partial rankings under the Kemeny axiomatic approach. European Journal of Operational Research, 249(2), 667-676.
 }
 \seealso{
-\code{\link{FASTcons}} FAST algorithm.
-
-\code{\link{QuickCons}} Quick algorithm.
+\code{\link{consrank}}
 }
 \author{
-Antonio D'Ambrosio \email{antdambr@unina.it} and Sonia Amodio \email{sonia.amodio@unina.it}
+Antonio D'Ambrosio \email{antdambr@unina.it}
 }
 \keyword{Quick}
 \keyword{algorithm}

@@ -16,11 +16,11 @@ the M by M score matrix
 Given a ranking, it computes the score matrix as defined by Emond and Mason (2002)
 }
 \examples{
-Y = matrix(c(1,3,5,4,2),1,5)
-SM=kemenyscore(Y)
+Y <- matrix(c(1,3,5,4,2),1,5)
+SM<-kemenyscore(Y)
 #
-Z=c(1,2,3,2)
-SM2=kemenyscore(Z)
+Z<-c(1,2,3,2)
+SM2<-kemenyscore(Z)
 
 }
 \references{

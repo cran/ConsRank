@@ -9,9 +9,9 @@
 #' 
 #' @examples
 #' data(APAred) 
-#' CI=combinpmatr(APAred) 
-#' TR=tabulaterows(APAred) 
-#' CI=combinpmatr(TR$X,TR$Wk)
+#' CI<-combinpmatr(APAred) 
+#' TR<-tabulaterows(APAred) 
+#' CI<-combinpmatr(TR$X,TR$Wk)
 #' 
 #' @author Antonio D'Ambrosio \email{antdambr@unina.it}
 #' 
@@ -22,11 +22,11 @@
 #' @export
 
 
-combinpmatr = function (X,Wk=NULL) {
+combinpmatr <- function (X,Wk=NULL) {
   
   ### COMBINED INPUT MATRIX as defined by Emond and Mason
   
-  if (is.null(Wk)) {
+  if (is(Wk,"NULL")) {
     #X must be data matrix with n judges (on the rows) ranking m objects (on the columns)
     CI=matrix(0,ncol(X), ncol(X))
     colnames(CI)=colnames(X)
@@ -37,7 +37,7 @@ combinpmatr = function (X,Wk=NULL) {
     }
   } else {
     
-    if (is.numeric(Wk)) {
+    if (is(Wk,"numeric")) {
       Wk=matrix(Wk,ncol=1)
     }
     

@@ -24,20 +24,21 @@ Eltime\tab   \tab Elapsed time in seconds}
 Branch-and-bound algorithm to find consensus ranking as definned by D'Ambrosio et al. (2015). If the number of objects to be ranked is large (greater than 20 or 25), it can work for very long time. Use either QuickCons or FASTcons with the option FULL=TRUE instead
 }
 \details{
+This function is deprecated and it will be removed in the 
+next release of the package. Use function 'consrank' instead.
+
 If the objects to be ranked is large (>25 - 30), it can take long time to find the solutions
 }
 \examples{
-data(APAFULL)
-CR=BBFULL(APAFULL)
+#data(APAFULL)
+#CR=BBFULL(APAFULL)
 
 }
 \references{
 D'Ambrosio, A., Amodio, S., and Iorio, C. (2015). Two algorithms for finding optimal solutions of the Kemeny rank aggregation problem for full rankings. Electronic Journal of Applied Statistical Analysis, 8(2), 198-213.
 }
 \seealso{
-\code{\link{FASTcons}} FAST algorithm algorithm.
-
-\code{\link{QuickCons}} Quick algorithm.
+\code{\link{consrank}}
 }
 \author{
 Antonio D'Ambrosio \email{antdambr@unina.it}

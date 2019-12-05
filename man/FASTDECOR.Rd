@@ -4,8 +4,17 @@
 \alias{FASTDECOR}
 \title{FAST algorithm calling DECOR}
 \usage{
-FASTDECOR(X, Wk = NULL, maxiter = 10, NP = 15, L = 100, FF = 0.4,
-  CR = 0.9, FULL = FALSE, PS = TRUE)
+FASTDECOR(
+  X,
+  Wk = NULL,
+  maxiter = 10,
+  NP = 15,
+  L = 100,
+  FF = 0.4,
+  CR = 0.9,
+  FULL = FALSE,
+  PS = TRUE
+)
 }
 \arguments{
 \item{X}{A N by M data matrix, in which there are N judges and M objects to be judged. Each row is a ranking of the objects which are represented by the columns. Alternatively X can contain the rankings observed only once. In this case the argument Wk must be used}
@@ -37,6 +46,10 @@ Eltime\tab   \tab Elapsed time in seconds}
 FAST algorithm repeats DECOR a prespecified number of time. 
 It returns the best solutions among the iterations
 }
+\details{
+This function is deprecated and it will be removed in the 
+next release of the package. Use function 'consrank' instead.
+}
 \examples{
 #data(EMD)
 #CR=FASTDECOR(EMD[,1:15],EMD[,16])
@@ -44,6 +57,9 @@ It returns the best solutions among the iterations
 }
 \references{
 D'Ambrosio, A., Mazzeo, G., Iorio, C., and Siciliano, R. (2017). A differential evolution algorithm for finding the median ranking under the Kemeny axiomatic approach. Computers and Operations Research, vol. 82, pp. 126-138.
+}
+\seealso{
+\code{\link{consrank}}
 }
 \author{
 Antonio D'Ambrosio \email{antdambr@unina.it} and Giulio Mazzeo \email{giuliomazzeo@gmail.com}

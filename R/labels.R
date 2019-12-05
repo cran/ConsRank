@@ -5,11 +5,17 @@
 #' @param x a  ranking, or a n by m data matrix in which there are n judges ranking m objects
 #' @param m the number of objects
 #' @param label optional: the name of the objects
-#' @param labs labs = 1 displays the names of the objects if there is argument "label", otherwise displays the permutation of first m integer. labs = 2 is to be used only if the argument "label" is not defined. In such a case it displays the permutation of the first m letters
+#' @param labs labs = 1 displays the names of the objects if there is argument "label", otherwise displays the permutation of first m integer.
+#'  labs = 2 is to be used only if the argument "label" is not defined. In such a case it displays the permutation of the first m letters
+#'  
+#' @details This function is deprecated and it will be removed in the 
+#' next release of the package. Use function 'rank2order' instead.
 #'
 #' @return the ordering
 #'
 #' @author Sonia Amodio \email{sonia.amodio@unina.it}
+#' 
+#' @seealso \code{\link{rank2order}}
 #' 
 #' @examples
 #' data(Idea)
@@ -22,7 +28,14 @@
 #' @export
 
 
-labels = function(x, m, label = 1:m, labs ){
+
+
+
+
+
+
+
+labels <- function(x, m, label = 1:m, labs ){
   
   ## Place labels in a data matrix X of rankings (N judges by M objects)
   #m is the number of objects
@@ -30,15 +43,15 @@ labels = function(x, m, label = 1:m, labs ){
   #labs = 1 or 2
   #source('reordering.r')
   # if the class of the object is different from 'matrix' transform it in 'matrix'
-  if(class(x) != 'matrix'){
-    obs = length(x)
-    XX = matrix(x, ncol = obs)
+  if(!is(x,"matrix")){
+    obs <- length(x)
+    XX <- matrix(x, ncol = obs)
   } else {
-    XX = x
+    XX <- x
   }
   
-  nj = nrow(XX)
-  nob = ncol(XX)
+  nj <- nrow(XX)
+  nob <- ncol(XX)
   
   ## if length of the object is higher than m, last number is the penalty
   #if(nob > m){
@@ -51,38 +64,39 @@ labels = function(x, m, label = 1:m, labs ){
   #    X = t(apply(x, 1, function(g) reordering(g, m)))
   #    }
   #} else {
-  X = XX
+  X <- XX
   #}
   if(labs ==1){
-    let = label
+    let <- label
   } else if(labs == 2){
-    let = LETTERS[label]
+    let <- LETTERS[label]
   }
   
-  out = rep(0, nj)
+  out <- rep(0, nj)
   for(i in 1:nj){
     
-    ord = rank(X[i,])
-    orders = tapply(let, ord, sort)
+    ord <- rank(X[i,])
+    orders <- tapply(let, ord, sort)
     
-    names1 = NULL
+    names1 <- NULL
     for(j in 1:length(orders)){
       if(length(orders[[j]]) > 1){
-        nams = paste('(', paste(orders[[j]], sep = '', collapse = ' '), ')', sep = '', collapse='')
+        nams <- paste('(', paste(orders[[j]], sep = '', collapse = ' '), ')', sep = '', collapse='')
       } else {
-        nams = paste(orders[[j]], collapse = ' ')
+        nams <- paste(orders[[j]], collapse = ' ')
       }
-      names1 = c(names1, nams)
+      names1 <- c(names1, nams)
     }
-    out[i] = paste(names1, collapse = ' ' )
+    out[i] <- paste(names1, collapse = ' ' )
   }
-  out = matrix(out, nrow = nj)
+  out <- matrix(out, nrow = nj)
   
   #if(nob > m){
   #dat = data.frame(data = out, pens = pens)
   #} else {
-  dat = out
+  dat <- out
   #}
   
   return(dat)
 }
+

@@ -20,11 +20,8 @@
 #' 
 #' @author Antonio D'Ambrosio \email{antdambr@unina.it} and Giulio Mazzeo \email{giuliomazzeo@gmail.com}
 #' 
-#' @details It works with a very large number of items to be ranked. Empirically, the number
-#' of population individuals (the NP parameter) can be set equal to 10, 20 or 30
-#' for problems till 20, 50 and 100 items. Both scaling rate and crossover ratio (parameters
-#' FF and CR) must be set by the user. The default options (FF=0.4, CR=0.9) work well
-#' for a large variety of data sets
+#' @details This function is deprecated and it will be removed in the 
+#' next release of the package. Use function 'consrank' instead.
 #' 
 #' @references D'Ambrosio, A., Mazzeo, G., Iorio, C., and Siciliano, R. (2017). A differential evolution algorithm for finding the median ranking under the Kemeny axiomatic approach. Computers and Operations Research, vol. 82, pp. 126-138. 
 #' 
@@ -32,79 +29,19 @@
 #' @keywords Median ranking
 #' @keywords Genetic algorithms
 #' 
-#' @seealso \code{\link{FASTcons}} FAST algorithm.
-#' @seealso \code{\link{QuickCons}} Quick algorithm.
-#' @seealso \code{\link{EMCons}} Branch-and-bound algorithm.
+#' @seealso \code{\link{consrank}}
 #' 
 #' @examples 
-#' data(EMD)
-#' CR=DECOR(EMD[,1:15],EMD[,16])
+#' #not run
+#' #data(EMD)
+#' #CR=DECOR(EMD[,1:15],EMD[,16])
 #' 
 #' @export
-#' 
 
 
-DECOR = function(X,Wk=NULL,NP=15,L=100,FF=0.4,CR=0.9,FULL=FALSE){
-
-  #check if X is a matrix
-  if (class(X)=="data.frame") {
-    #colnames(X)=NULL
-    X=as.matrix(X)
-  }
+DECOR <- function(X,Wk=NULL,NP=15,L=100,FF=0.4,CR=0.9,FULL=FALSE) {
+  .Deprecated(msg = "'FASTDECOR' will be removed in the next release of the package")
+  out=consrank(X,wk=Wk,algorithm="decor",full=FULL,itermax=1,np=NP,gl=L,ff=FF,cr=CR)   
+  return(out)
   
-  M = nrow(X)
-  N=ncol(X)
-  tic = proc.time()[3]  
-  
-  #check if there are trivial solutions
-  
-  if (M==1) { 
-    consensus = X
-    TauX = 1
-    
-  } else {
-    
-    if (!is.null(Wk)) {
-      
-      if (is.numeric(Wk)) {
-        Wk=matrix(Wk,ncol=1)
-        NJ=sum(Wk)
-      }
-      
-      cij = combinpmatr(X,Wk)
-      
-    } else {
-      
-      cij = combinpmatr(X)
-      NJ=nrow(X)
-    }
-    
-    
-    if (sum(cij==0)==length(cij)){
-      print("Combined Input Matrix contains only zeros: any ranking in the reference universe is a median ranking")
-      return()
-      
-    } 
-    
-    if (sum(sign(cij+diag(N)))==length(cij)){
-      print("Combined Input Matrix contains only positive values: the median ranking is the all-tie solution")
-      return()
-      
-    }
-    
-    
-    COR=DECORcore(cij,NJ,NP,L,FF,CR,FULL)
-    
-    Consensus=COR$ConsR
-    TauX=COR$Tau
-    colnames(Consensus)=colnames(X) 
-    row.names(Consensus)=NULL
-    
-    
-    
-    
-  }
-  toc=proc.time()[3]
-  eltime=toc-tic
-  return(list(Consensus=reordering(Consensus), Tau=TauX, Eltime=eltime) )
 }

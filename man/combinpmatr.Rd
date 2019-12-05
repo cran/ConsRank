@@ -19,9 +19,9 @@ Compute the Combined input matrix of a data set as defined by Emond and Mason (2
 }
 \examples{
 data(APAred) 
-CI=combinpmatr(APAred) 
-TR=tabulaterows(APAred) 
-CI=combinpmatr(TR$X,TR$Wk)
+CI<-combinpmatr(APAred) 
+TR<-tabulaterows(APAred) 
+CI<-combinpmatr(TR$X,TR$Wk)
 
 }
 \references{

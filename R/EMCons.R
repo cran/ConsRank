@@ -6,7 +6,9 @@
 #' @param Wk Optional: the frequency of each ranking in the data
 #' @param PS If PS=TRUE, on the screen some information about how many branches are processed are displayed
 #' 
-#' @details If the objects to be ranked is large (>15-20) with some missing, it can take long time to find the solutions. If the searching space is limited to the space of full rankings (also incomplete rankings, but without ties), use the function BBFULL or the functions FASTcons and QuickCons with the option FULL=TRUE.
+#' @details This function is deprecated and it will be removed in the 
+#' next release of the package. Use function 'consrank' instead.
+#' 
 #' 
 #' @return a "list" containing the following components:
 #' \tabular{lll}{
@@ -25,9 +27,7 @@
 #' 
 #' @references Emond, E. J., and Mason, D. W. (2002). A new rank correlation coefficient with application to the consensus ranking problem. Journal of Multi-Criteria Decision Analysis, 11(1), 17-28.
 #' 
-#' @seealso \code{\link{FASTcons}} FAST algorithm algorithm.
-#' @seealso \code{\link{QuickCons}} Quick algorithm.
-#' @seealso \code{\link{BBFULL}} Branc-and-bound algorithm for full rankings.
+#' @seealso \code{\link{consrank}} 
 #'
 #' @keywords Consensus ranking
 #' @keywords median ranking
@@ -36,91 +36,11 @@
 
 
 
-EMCons = function(X,Wk=NULL,PS=TRUE)  {
-  #Emond and Mason Branch and Bound algorithm to find median ranking
-  #X is a data matrix in which the rows are the judges and the columns indicates the objects
-  #Wk is the vector of weigths
-  if (class(X)=="data.frame") {
-    #colnames(X)=NULL
-    X=as.matrix(X)
-  }
+
+EMCons <- function(X,Wk=NULL,PS=TRUE) {
+  .Deprecated(msg = "'EMCons' will be removed in the next release of the package")
+  out=consrank(X,wk=Wk,ps=PS,proc=TRUE)
+  return(out)
   
-  
-  
-  M = nrow(X)
-  N=ncol(X)
-  callps=PS
-  tic = proc.time()[3]
-  if (M==1) {
-    consensus = X
-    TauX = 1
-  } else {
-    if (!is.null(Wk)) {
-      
-      if (is.numeric(Wk)) {
-        Wk=matrix(Wk,ncol=1)
-      }
-      
-      cij = combinpmatr(X,Wk)
-    } else {
-      cij = combinpmatr(X)
-    }
-    
-    if (sum(cij==0)==length(cij)){
-      print("Combined Input Matrix contains only zeros: any ranking in the reference universe is a median ranking")
-      return()
-      
-    } 
-    
-    if (sum(sign(cij+diag(N)))==length(cij)){
-      print("Combined Input Matrix contains only positive values: the median ranking is the all-tie solution")
-      return()
-      
-    }
-    
-    R=findconsensusBB(cij)
-    cons1=BBconsensus(R,cij,FULL=FALSE,PS=FALSE)
-    consensus1=cons1$cons
-    Po=cons1$pen
-    consensus=BBconsensus2(consensus1,cij,Po,PS=callps,FULL=FALSE)
-  }
-  
-  
-  if (nrow(consensus)==1) {
-    
-    Sij=scorematrix(consensus)
-    
-    if (!is.null(Wk)){
-      TauX=sum(cij*Sij) / ( sum(Wk)* (N*(N-1)) )
-    } else {
-      TauX=sum(cij*Sij) / (  M*(N*(N-1)) )
-    }
-    
-  } else {
-    
-    TauX=matrix(0,nrow(consensus),1)
-    
-    for (k in 1:nrow(consensus)) {
-      
-      Sij=scorematrix(t(matrix(consensus[k,])))
-      
-      if (!is.null(Wk)) {
-        
-        TauX[k,1] = sum(cij*Sij) / ( sum(Wk)*(N*(N-1)) )
-        
-      } else {
-        
-        TauX[k,1] = sum(cij*Sij) / (M*(N*(N-1)))
-        
-      }
-      
-    }
-    
-  }
-  toc = proc.time()[3]
-  colnames(consensus)=colnames(X) 
-  #consensus=reordering(consensus)
-  eltime=toc-tic
-  return(list(Consensus=reordering(consensus), Tau=TauX, Eltime=eltime) )
 }
 

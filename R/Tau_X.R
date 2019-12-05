@@ -17,32 +17,36 @@
 #' 
 #' @examples
 #' data(BU)
-#' RD=BU[,1:3]
-#' Tau=Tau_X(RD)
-#' Tau1_3=Tau_X(RD[1,],RD[3,])
+#' RD<-BU[,1:3]
+#' Tau<-tau_x(RD)
+#' Tau1_3<-tau_x(RD[1,],RD[3,])
 #' 
 #' @export 
 
 
-Tau_X = function(X,Y=NULL) {
+tau_x <- function(X,Y=NULL) {
   
-  if(is.numeric(X) & !is.matrix(X)){
-    X=matrix(X,ncol=length(X))
+  if(is(X,"numeric") & !is(X,"matrix")){
+    X<-matrix(X,ncol=length(X))
   }
   
   
-  N=ncol(X)
-  maxd=N*(N-1)
-  if (is.null(Y)){
-    d=kemenyd(X)
-    tau = 1-(2*d/maxd)
+  N<-ncol(X)
+  maxd<-N*(N-1)
+  if (is(Y,"NULL")){
+    d<-kemenyd(X)
+    tau <- 1-(2*d/maxd)
   } else {
-    if(is.numeric(Y) & !is.matrix(Y)){
-      Y=matrix(Y,ncol=length(Y))
+    if(is(Y,"numeric") & !is(Y,"matrix")){
+      Y<-matrix(Y,ncol=length(Y))
     }
-    d=kemenyd(X,Y)
-    tau = 1-(2*d/maxd)
+    d<-kemenyd(X,Y)
+    tau <- 1-(2*d/maxd)
   }
   tau 
 }
+
+#' @rdname tau_x
+#' @export
+Tau_X <- tau_x
 
