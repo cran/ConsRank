@@ -5,7 +5,7 @@
 #' @param X A n by m data matrix, in which there are n judges and m objects to be judged. Each row is a ranking of the objects which are represented by the columns. If X contains the rankings observed only once, the argument wk can be used
 #' @param wk Optional: the frequency of each ranking in the data
 #' @param ps If PS=TRUE, on the screen some information about how many branches are processed are displayed.
-#' @param algorithm Specifies the used algorithm. One among "BB", "Quick", "FAST" and "DECOR". algorithm="BB" is the default option.
+#' @param algorithm Specifies the used algorithm. One among "BB", "quick", "fast" and "decor". algorithm="BB" is the default option.
 #' @param full Specifies if the median ranking must be searched in the universe of rankings including all the possible ties (full=FALSE) or in the restricted space of full rankings (permutations). full=FALSE is the default option.
 #' @param itermax maximum number of iterations for FAST and DECOR algorithms. itermax=10 is the default option.
 #' @param np For DECOR algorithm only: the number of population individuals. np=15 is the default option.
@@ -204,9 +204,12 @@ EMConsn <- function(X,Wk=NULL,PS=TRUE)  {
   callps<-PS
   tic <- proc.time()[3]
   if (M==1) {
+    
     consensus <- X
     TauX <- 1
+    
   } else {
+    
     if (!is(Wk,"NULL")) {
       
       if (is(Wk,"numeric")) {
@@ -235,40 +238,51 @@ EMConsn <- function(X,Wk=NULL,PS=TRUE)  {
     consensus1<-cons1$cons
     Po<-cons1$pen
     consensus<-BBconsensus2(consensus1,cij,Po,PS=callps,FULL=FALSE)
-  }
-  
-  
-  if (nrow(consensus)==1) {
     
-    Sij<-scorematrix(consensus)
-    
-    if (!is(Wk,"NULL")){
-      TauX<-sum(cij*Sij) / ( sum(Wk)* (N*(N-1)) )
-    } else {
-      TauX<-sum(cij*Sij) / (  M*(N*(N-1)) )
-    }
-    
-  } else {
-    
-    TauX<-matrix(0,nrow(consensus),1)
-    
-    for (k in 1:nrow(consensus)) {
+    if (nrow(consensus)==1) {
       
-      Sij<-scorematrix(t(matrix(consensus[k,])))
+      Sij <-scorematrix(consensus)
       
-      if (!is(Wk,"NULL")) {
+      if (!is(Wk,"NULL")){
         
-        TauX[k,1] <- sum(cij*Sij) / ( sum(Wk)*(N*(N-1)) )
+        TauX<-sum(cij*Sij) / ( sum(Wk)* (N*(N-1)) )
         
+        } else {
+          
+          TauX<-sum(cij*Sij) / (  M*(N*(N-1)) )
+          
+        }
+      
+      
       } else {
         
-        TauX[k,1] <- sum(cij*Sij) / (M*(N*(N-1)))
+        TauX<-matrix(0,nrow(consensus),1)
+        
+        for (k in 1:nrow(consensus)) {
+          
+          Sij<-scorematrix(t(matrix(consensus[k,])))
+          
+          if (!is(Wk,"NULL")) {
+            
+            TauX[k,1] <- sum(cij*Sij) / ( sum(Wk)*(N*(N-1)) )
+            
+            } else {
+              
+              
+              TauX[k,1] <- sum(cij*Sij) / (M*(N*(N-1)))
+              
+              
+            }
+          
+          
+        }
+        
         
       }
-      
-    }
+    
     
   }
+
   toc <- proc.time()[3]
   colnames(consensus)<-colnames(X) 
   #consensus<-reordering(consensus)
@@ -830,8 +844,10 @@ QuickConsn <- function(X,Wk=NULL, FULL=FALSE,PS=FALSE)   {
   tic <- proc.time()[3]
   
   if (M==1) {
+    
     consensus <- X
-    TauX <- 1
+    Taux <- 1
+    
   } else {
     if (!is(Wk,"NULL")) {
       
@@ -865,34 +881,33 @@ QuickConsn <- function(X,Wk=NULL, FULL=FALSE,PS=FALSE)   {
     consensus <- unique(reordering(rbind(consensusA,consensusB,consensusC,consensusD)))
     howcons <- nrow(consensus)
     
-    
-  }
   #d=kemenyd(X,consensus$cons)
   
-  Taux<-matrix(0,nrow(consensus),1)
-  for (k in 1:nrow(consensus)) {
+   Taux<-matrix(0,nrow(consensus),1)
+   for (k in 1:nrow(consensus)) {
     
-    #Sij=scorematrix(t(as.matrix(consensus[k,])))
-    Sij<-scorematrix(matrix(consensus[k,],1,N))
+     #Sij=scorematrix(t(as.matrix(consensus[k,])))
+     Sij<-scorematrix(matrix(consensus[k,],1,N))
     
-    if (!is(Wk,"NULL")){
-      Taux[k,1]<-sum(cij*Sij) / ( sum(Wk)* (N*(N-1)) )
-    } else {
+     if (!is(Wk,"NULL")){
+       Taux[k,1]<-sum(cij*Sij) / ( sum(Wk)* (N*(N-1)) )
+     } else {
       Taux[k,1]<-sum(cij*Sij) / (  M*(N*(N-1)) )
-    }
+     }
     
-  }
+   }
   
-  if (howcons>1) {
-    nco<-which(Taux==max(Taux))
-    if (length(nco)>1) {
-      consensus<-consensus[nco,]
-      Taux<-matrix(rep(max(Taux),nrow(consensus)),nrow(consensus),1)
-    } else {
-      Taux<-max(Taux)
+   if (howcons>1) {
+     nco<-which(Taux==max(Taux))
+     if (length(nco)>1) {
+       consensus<-consensus[nco,]
+       Taux<-matrix(rep(max(Taux),nrow(consensus)),nrow(consensus),1)
+     } else {
+       Taux<-max(Taux)
       #consensus <- t(matrix(consensus[nco,]))
-      consensus <- matrix(consensus[nco,],1,N)
-    }
+       consensus <- matrix(consensus[nco,],1,N)
+     }
+   }
   }
   colnames(consensus)<-colnames(X) 
   toc <- proc.time()[3]
@@ -917,6 +932,7 @@ FASTconsn <- function(X, Wk=NULL, maxiter=50, FULL=FALSE, PS=FALSE)   {
   if (M==1) {
     CR <- X
     Taux <- 1
+    colnames(CR) <- colnames(X)
   } else {
     if (!is(Wk,"NULL")) {
       
@@ -969,33 +985,34 @@ FASTconsn <- function(X, Wk=NULL, maxiter=50, FULL=FALSE, PS=FALSE)   {
       }
       
     }
-  }
+  
   #d=kemenyd(X,consensus$cons)
   
-  Taux<-matrix(0,nrow(CR),1)
-  for (k in 1:nrow(CR)) {
-    Sij<-scorematrix(matrix(CR[k,],1,ncol(X)))
-    if (!is.null(Wk)){
-      Taux[k,]<-sum(cij*Sij) / ( sum(Wk)* (N*(N-1)) )
-    } else {
-      Taux[k,]<-sum(cij*Sij) / (  M*(N*(N-1)) )
+   Taux<-matrix(0,nrow(CR),1)
+   for (k in 1:nrow(CR)) {
+     Sij<-scorematrix(matrix(CR[k,],1,ncol(X)))
+     if (!is.null(Wk)){
+       Taux[k,]<-sum(cij*Sij) / ( sum(Wk)* (N*(N-1)) )
+     } else {
+       Taux[k,]<-sum(cij*Sij) / (  M*(N*(N-1)) )
+     }
+   }
+  #}
+    CR<-reordering(CR)
+    indice<-which(Taux==max(Taux));
+    Taux<-max(Taux)
+    CR<-matrix(CR[indice,],ncol=N)
+    if (nrow(CR>1)){
+      CR<-unique(CR)
     }
-  }
+    if (!is(dim(CR),"NULL")) {
+      Taux<-matrix(rep(Taux,nrow(CR)))
+    }
   
-  CR<-reordering(CR)
-  indice<-which(Taux==max(Taux));
-  Taux<-max(Taux)
-  CR<-matrix(CR[indice,],ncol=N)
-  if (nrow(CR>1)){
-    CR<-unique(CR)
+    colnames(CR)<-colnames(X) 
   }
-  if (!is(dim(CR),"NULL")) {
-    Taux<-matrix(rep(Taux,nrow(CR)))
-  }
-  
-  colnames(CR)<-colnames(X) 
-  toc <- proc.time()[3]
-  eltime<-toc-tic
+    toc <- proc.time()[3]
+    eltime<-toc-tic
   return(list(Consensus=CR, Tau=Taux, Eltime=eltime) )
 }
 
@@ -1284,6 +1301,7 @@ FASTDECORn <- function(X,Wk=NULL,maxiter=10,NP=15,L=100,FF=0.4,CR=0.9,FULL=FALSE
   if (M==1) { 
     consensus <- X
     TauX <- 1
+    colnames(consensus)<-colnames(X)
     
   } else {
     
@@ -1338,32 +1356,32 @@ FASTDECORn <- function(X,Wk=NULL,maxiter=10,NP=15,L=100,FF=0.4,CR=0.9,FULL=FALSE
       
     }
     
+  #}
+  
+    sol<-sol[-1,]
+    taos<-matrix(taos[-1],(length(taos)-1),1)
+  
+    if (is(nrow(sol),"NULL")){sol<-matrix(sol,1,N)}
+  
+    bestindex<-which(taos==max(taos))
+    sol<-sol[bestindex,]
+    taos<-max(taos)
+  
+    if (is(nrow(sol),"NULL")){
+      sol<-matrix(sol,1,N)
+      Consensus<-sol
+    } else {
+      Consensus<-unique(sol)
+    }
+  
+    if (is(nrow(Consensus),"NULL")){
+      Consensus<-matrix(Consensus,1,N)
+    }
+  
+    TauX<-matrix(rep(taos),nrow(Consensus),1)
+    colnames(Consensus)<-colnames(X) 
+    row.names(Consensus)<-NULL
   }
-  
-  sol<-sol[-1,]
-  taos<-matrix(taos[-1],(length(taos)-1),1)
-  
-  if (is(nrow(sol),"NULL")){sol<-matrix(sol,1,N)}
-  
-  bestindex<-which(taos==max(taos))
-  sol<-sol[bestindex,]
-  taos<-max(taos)
-  
-  if (is(nrow(sol),"NULL")){
-    sol<-matrix(sol,1,N)
-    Consensus<-sol
-  } else {
-    Consensus<-unique(sol)
-  }
-  
-  if (is(nrow(Consensus),"NULL")){
-    Consensus<-matrix(Consensus,1,N)
-  }
-  
-  TauX<-matrix(rep(taos),nrow(Consensus),1)
-  colnames(Consensus)<-colnames(X) 
-  row.names(Consensus)<-NULL
-  
   
   toc<-proc.time()[3]
   eltime<-toc-tic

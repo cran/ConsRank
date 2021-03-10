@@ -1,5 +1,5 @@
-2b2641536b9f1ce088a0ecd41114beaa *DESCRIPTION
-0df1a6feabb15ea2961cd781ea293d1c *NAMESPACE
+aec614e41a220cbcdc742e854586f9d3 *DESCRIPTION
+5e6b397296c1918ba30459cff4ef87a7 *NAMESPACE
 58902bc0032420b75dc40b269edae8f0 *R/BBFULL.R
 52bd1a7c19961261d76ea7d55dfde4a7 *R/DECOR.R
 151444f788568080b88b4b89775f38a4 *R/EMCons.R
@@ -7,7 +7,7 @@ abb4afef6e8232a48e15e23e811b3068 *R/FASTDECOR.R
 52f3d02671b21bbbd0f290217f35f8b8 *R/FASTcons.R
 19e704112cfe84f87ae36c549218b370 *R/QuickCons.R
 a10bc7ca96c2055d5fb8d6375afde518 *R/combinpmatr.R
-9b11ff3f4d0a681466d089d0209e5b5a *R/consrank.R
+22e8c17174b788ce42012cf16fd3d43f *R/consrank.R
 56a0fd2cb8271891ab60604ce40f8337 *R/deprecated.R
 401ab02dda41a3db52ba6fa854831583 *R/kemenyd.R
 a18e712e5467cd590cfb6fd5628357f3 *R/kemenydesign.R
@@ -47,7 +47,7 @@ a27de1a5f23e0a7dc674b17ad9fa11ba *man/FASTDECOR.Rd
 2c780659c7a3ae8ea4bcedf868c4b0c0 *man/QuickCons.Rd
 98e19c133141811f5d41f53676ca8f7d *man/USAranks.Rd
 ec363c8aebc2bba8b32de775676948e5 *man/combinpmatr.Rd
-37e2baf7a7b24c62f4d0f3d14b55c343 *man/consrank.Rd
+23de6266b745d717b4f433e36cd00fe2 *man/consrank.Rd
 ddd3367d646f9a30ae0df3780a8e4910 *man/kemenyd.Rd
 2315ed267b61bdeebcd61b563f0f0203 *man/kemenydesign.Rd
 c4e6dde1f76bc2fb177875430e34aa28 *man/kemenyscore.Rd

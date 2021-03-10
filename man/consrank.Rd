@@ -25,7 +25,7 @@ consrank(
 
 \item{ps}{If PS=TRUE, on the screen some information about how many branches are processed are displayed.}
 
-\item{algorithm}{Specifies the used algorithm. One among "BB", "Quick", "FAST" and "DECOR". algorithm="BB" is the default option.}
+\item{algorithm}{Specifies the used algorithm. One among "BB", "quick", "fast" and "decor". algorithm="BB" is the default option.}
 
 \item{full}{Specifies if the median ranking must be searched in the universe of rankings including all the possible ties (full=FALSE) or in the restricted space of full rankings (permutations). full=FALSE is the default option.}
 
