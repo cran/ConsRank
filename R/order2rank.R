@@ -63,7 +63,9 @@ order2rank=function(X,TO="{",TC="}"){
   for (i in 1:r){
     if (r==1){ #if x is an ordering vector
       openb<-unlist(gregexpr(pattern = TO, X, fixed=TRUE))
+      openb[openb>0]<-1 #aggiunto il 27/09/2021
       closeb<-unlist(gregexpr(pattern = TC, X, fixed=TRUE))
+      closeb[closeb>0]<-2 #aggiunto il 27/09/2021
       
       if(sum(rowSums(cbind(openb,closeb))==-2)==c){ #if there are no ties
         
@@ -124,7 +126,9 @@ order2rank=function(X,TO="{",TC="}"){
     } else { #if X is an ordering matrix
       
       openb<-unlist(gregexpr(pattern =TO, X[i,], fixed=TRUE))
+      openb[openb>0]<-1 #aggiunto il 27/09/2021
       closeb<-unlist(gregexpr(pattern =TC, X[i,], fixed=TRUE))
+      closeb[closeb>0]<-2 #aggiunto il 27/09/2021
       
       if(sum(rowSums(cbind(openb,closeb))==-2)==c){ #if there are no ties
         
