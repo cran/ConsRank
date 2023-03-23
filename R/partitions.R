@@ -53,7 +53,7 @@ partitions <- function(n,k=NULL,items=NULL,itemtype="L"){
   #OUTPUT: the ordering matrix (or vector)
   #
   #example
-  # X=partitions(4,3) #shows all the ways to partition 4 itemns (say "a", "b", "c" and "d" into 3 non-empty subets
+  # X=partitions(4,3) #shows all the ways to partition 4 items (say "a", "b", "c" and "d" into 3 non-empty subets
   #                   #(i.e., into 3 buckets). The Stirling number of the second kind (4,3) indicates that there
   #                   #are 6 ways. The output is
   #                   #> X

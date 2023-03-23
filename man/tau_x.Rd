@@ -32,6 +32,8 @@ Emond, E. J., and Mason, D. W. (2002). A new rank correlation coefficient with a
 }
 \seealso{
 \code{\link{kemenyd}} Kemeny distance
+
+\code{\link{iw_tau_x}} item-weighted tau_x rank correlation coefficient
 }
 \author{
 Antonio D'Ambrosio \email{antdambr@unina.it}

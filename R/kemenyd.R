@@ -12,6 +12,7 @@
 #' @author Antonio D'Ambrosio \email{antdambr@unina.it}
 #' 
 #' @seealso \code{\link{tau_x}} TauX rank correlation coefficient
+#' @seealso \code{\link{iw_kemenyd}} item-weighted Kemeny distance
 #' 
 #' @examples
 #' data(Idea)

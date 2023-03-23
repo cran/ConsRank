@@ -21,7 +21,7 @@ Tau \tab       \tab averaged TauX rank correlation coefficient\cr
 Eltime\tab   \tab Elapsed time in seconds}
 }
 \description{
-Branch-and-bound algorithm to find consensus ranking as definned by D'Ambrosio et al. (2015). If the number of objects to be ranked is large (greater than 20 or 25), it can work for very long time. Use either QuickCons or FASTcons with the option FULL=TRUE instead
+Branch-and-bound algorithm to find consensus ranking as defined by D'Ambrosio et al. (2015). If the number of objects to be ranked is large (greater than 20 or 25), it can work for very long time. Use either QuickCons or FASTcons with the option FULL=TRUE instead
 }
 \details{
 This function is deprecated and it will be removed in the 

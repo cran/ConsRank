@@ -85,6 +85,9 @@ D'Ambrosio, A., Amodio, S., and Iorio, C. (2015). Two algorithms for finding opt
 Amodio, S., D'Ambrosio, A. and Siciliano, R. (2016). Accurate algorithms for identifying the median ranking when dealing with weak and partial rankings under the Kemeny axiomatic approach. European Journal of Operational Research, 249(2), 667-676.
 D'Ambrosio, A., Mazzeo, G., Iorio, C., and Siciliano, R. (2017). A differential evolution algorithm for finding the median ranking under the Kemeny axiomatic approach. Computers and Operations Research, vol. 82, pp. 126-138.
 }
+\seealso{
+\code{\link{iwquickcons}}
+}
 \author{
 Antonio D'Ambrosio \email{antdambr@unina.it}
 }

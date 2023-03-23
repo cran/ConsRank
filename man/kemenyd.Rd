@@ -30,6 +30,8 @@ Kemeny, J. G., & Snell, L. J. (1962). Preference ranking: an axiomatic approach.
 }
 \seealso{
 \code{\link{tau_x}} TauX rank correlation coefficient
+
+\code{\link{iw_kemenyd}} item-weighted Kemeny distance
 }
 \author{
 Antonio D'Ambrosio \email{antdambr@unina.it}
