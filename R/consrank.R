@@ -312,31 +312,73 @@ EMConsn <- function(X,Wk=NULL,PS=TRUE)  {
 
 #--------------------------------------------------------------------------------------
 
+##TO BE DELETED (21/06/2023)
+# findconsensusBB <- function(cij,FULL=FALSE) {
+#   
+#   X<-mat.or.vec(1,ncol(cij)) + 1
+#   N<-ncol(X)
+#   indici<-combinations(N,2)
+#   for (j in 1:nrow(indici)) {
+#     if ( sign(cij[indici[j,1],indici[j,2]]) == 1 & sign(cij[indici[j,2],indici[j,1]]) == -1 ) {
+#       X[indici[j,1]]<-X[indici[j,1]]+1
+#     } else if ( sign(cij[indici[j,1],indici[j,2]]) == -1 & sign(cij[indici[j,2],indici[j,1]]) == 1 ) {
+#       X[indici[j,2]]<-X[indici[j,2]] + 1
+#     } else if (sign(cij[indici[j,1],indici[j,2]]) == -1 & sign(cij[indici[j,2],indici[j,1]]) == -1 ) {
+#       X[indici[j,1]]<- NA
+#     } else if (sign(cij[indici[j,1],indici[j,2]]) == 1 & sign(cij[indici[j,2],indici[j,1]]) == 1 ){
+#       X[indici[j,1]]<-X[indici[j,1]]+1
+#       X[indici[j,2]]<-X[indici[j,2]] + 1
+#     }
+#     
+#   }
+#   
+#   X<-(N+1)-X;
+#   if (FULL==TRUE){
+#     X<-breakties(X)
+#   }
+#   return(X)
+# }
+#--------------
+##TO BE INCLUDED
 findconsensusBB <- function(cij,FULL=FALSE) {
-  
-  X<-mat.or.vec(1,ncol(cij)) + 1
-  N<-ncol(X)
-  indici<-combinations(N,2)
-  for (j in 1:nrow(indici)) {
-    if ( sign(cij[indici[j,1],indici[j,2]]) == 1 & sign(cij[indici[j,2],indici[j,1]]) == -1 ) {
-      X[indici[j,1]]<-X[indici[j,1]]+1
-    } else if ( sign(cij[indici[j,1],indici[j,2]]) == -1 & sign(cij[indici[j,2],indici[j,1]]) == 1 ) {
-      X[indici[j,2]]<-X[indici[j,2]] + 1
-    } else if (sign(cij[indici[j,1],indici[j,2]]) == -1 & sign(cij[indici[j,2],indici[j,1]]) == -1 ) {
-      X[indici[j,1]]<- NA
-    } else if (sign(cij[indici[j,1],indici[j,2]]) == 1 & sign(cij[indici[j,2],indici[j,1]]) == 1 ){
-      X[indici[j,1]]<-X[indici[j,1]]+1
-      X[indici[j,2]]<-X[indici[j,2]] + 1
-    }
-    
+  N <- ncol(cij)
+  X <- matrix(1,1,N)
+  #I need the id later on
+  idx <- seq(1:N)
+  #better immediately convert cij in sign matrix
+  scij <- sign(cij)
+  #now, process each item (insetad of each pair of items)
+  for(j in 1:N){
+    #case1:
+    #   if sign(cij)=1 & sign(cji)=-1, then X[i]=X[i]+1
+    a <- sum( (scij[j,-seq(1:j)]==1) * (scij[-seq(1:j),j]==-1))
+    X[j] <- X[j]+a
+    #
+    #case 2: 
+    #   if sign(cij)=-1 & sign(cji)=1, then X[j]=X[j]+1
+    b <- ( (scij[j,-seq(1:j)]==-1) * (scij[-seq(1:j),j]==1))
+    indb=idx[-seq(1:j)][which(b==1)]
+    X[indb] <- X[indb]+1 
+    #
+    #case 3:
+    #  if sign(cij)=1 & sign(cji)=1, then X[i]=X[i]+1 and X[j]=X[j]+1
+    c=( (scij[j,-seq(1:j)]==1) * (scij[-seq(1:j),j]==1))
+    indc=idx[-seq(1:j)][which(c==1)] 
+    #indc is the index of only X[j]'s
+    X[indc] <- X[indc]+1
+    X[j] <- X[j]+length(indc)
   }
   
-  X<-(N+1)-X;
+  X<-(N+1)-X
+  
   if (FULL==TRUE){
     X<-breakties(X)
   }
+  
   return(X)
 }
+
+
 
 #--------------------------------------------------------------------------------------------------
 
@@ -718,12 +760,12 @@ PenaltyBB2 <- function(cij,candidate,ord)   #indice must be order(CR)
   
 {
   
-  Ds<-t(mat.or.vec(1,(length(ord)-1)));
-  addpenalty<-t(mat.or.vec(1,(length(ord)-1)));
+  Ds<-t(mat.or.vec(1,(length(ord)-1)))
+  addpenalty<-t(mat.or.vec(1,(length(ord)-1)))
   
   for (k in 1:(length(ord)-1)) {
     
-    Ds[k,1]<-sign(candidate[ord[length(ord)]]-candidate[ord[k]]);
+    Ds[k,1]<-sign(candidate[ord[length(ord)]]-candidate[ord[k]])
     
     if (Ds[k,1]==1) {
       
@@ -775,7 +817,7 @@ PenaltyBB2 <- function(cij,candidate,ord)   #indice must be order(CR)
 ReorderingBB <- function(RR) {
   
   RR <- RR+1
-  R <- RR;
+  R <- RR
   k <- ncol(R)
   neword <- order(R)
   indexing <- mat.or.vec(1, ncol(R)-1)
@@ -817,7 +859,7 @@ findbranches <- function(R,ord,b,FULL=FALSE) {
   MI<-min(KR)
   aa<-1
   KO<-1
-  KR[length(KR)+1]<-MO+1;
+  KR[length(KR)+1]<-MO+1
   R[ord[b]]<-KR
   candidate<-mat.or.vec(nrow(R), ncol(R))
   
@@ -1063,7 +1105,7 @@ FASTconsn <- function(X, Wk=NULL, maxiter=50, FULL=FALSE, PS=FALSE)   {
    }
   #}
     CR<-reordering(CR)
-    indice<-which(Taux==max(Taux));
+    indice<-which(Taux==max(Taux))
     Taux<-max(Taux)
     CR<-matrix(CR[indice,],ncol=N)
     if (nrow(CR>1)){
@@ -1272,7 +1314,7 @@ DECORcore <- function(cij,NJ,NP=15,L=50,FF=0.4,CR=0.9,FULL=FALSE){
       
       
       # apply mutation
-      evolution <- mutaterand1(population,FF,i);
+      evolution <- mutaterand1(population,FF,i)
       
       # apply crossover
       evolution <- crossover(population[i,],evolution,CR)
@@ -1735,7 +1777,7 @@ combincost <- function(ranking,cij,M){
   t <- sum(sum(cij*sij))/(M*(N*(N-1)))
   
   # computing the distance (from tau)
-  c <- (maxdist/2)*(1-t)*M;    
+  c <- (maxdist/2)*(1-t)*M   
   
   return(list(tp=t,cp=c))
 }

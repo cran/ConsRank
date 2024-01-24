@@ -1,4 +1,4 @@
-78db70eb1715c73fcfa77324b89702aa *DESCRIPTION
+4ee648af34561aadc2487b30475a636e *DESCRIPTION
 8ce6d52304272a50e6861a346fd187a2 *NAMESPACE
 8d031ec797c1f2c903d3a72475f96bc2 *R/BBFULL.R
 52bd1a7c19961261d76ea7d55dfde4a7 *R/DECOR.R
@@ -8,10 +8,10 @@ abb4afef6e8232a48e15e23e811b3068 *R/FASTDECOR.R
 e12f1b0ce696ccb037a2111cf7e283b2 *R/IWquickcons.R
 19e704112cfe84f87ae36c549218b370 *R/QuickCons.R
 a10bc7ca96c2055d5fb8d6375afde518 *R/combinpmatr.R
-5974527e0fbec8ace1564f7ea959308d *R/consrank.R
+058d8c431b4b0d431823521d3d0df1be *R/consrank.R
 56a0fd2cb8271891ab60604ce40f8337 *R/deprecated.R
 5162ba50d0bcd2dee25eb6e22009d2bb *R/kemenyd.R
-a18e712e5467cd590cfb6fd5628357f3 *R/kemenydesign.R
+9ea3000e2b0d002b7fa82596240abb7a *R/kemenydesign.R
 f87e94c7ed066e782c8e580593fea88c *R/kemenyscore.R
 1f3a993fbc1c5050b15c55feb1a2187c *R/labels.R
 778f1777ca530b91c3674080eca04c9e *R/order2rank.R
@@ -23,7 +23,7 @@ b63b8eb9926f3a99bacef449be20c0aa *R/scorematrix.R
 e4bbda1afdaa939f883ce7dc6a69cbf3 *R/stirling2.R
 83135cf7e8ebfd813bdd0af11f3d8579 *R/tabulaterows.R
 ecd4b68c0b6d08717ece18ad395eca1a *R/tau_x.R
-c2c8bebbf671a0f992966602ee206fbc *R/univranks.R
+dfc74e6e00a2e50fab310d15c1f8991c *R/univranks.R
 2e4ca8f71d214dececd09c9d98bc81ed *R/weighted_KemenyDist&TauX.R
 17c7c210b635b501b5fae03c1fe0092e *data/APAFULL.rda
 dea2d4c5fc0c6a32ea30a90dd8c115e3 *data/APAred.rda
