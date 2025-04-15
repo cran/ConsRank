@@ -55,7 +55,7 @@ rank2order <- function (X,items=NULL,TO="{",TC="}",itemtype="L"){
     
     if(itemtype=="L"){
       
-      items<-letters[seq(1:c)]
+      items<-paste("O",seq(1:c),sep="")
       
     } else {
       

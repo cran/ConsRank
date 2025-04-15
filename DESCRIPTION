@@ -2,8 +2,8 @@ Package: ConsRank
 Type: Package
 Title: Compute the Median Ranking(s) According to the Kemeny's
         Axiomatic Approach
-Version: 2.1.4
-Date: 2024-01-24
+Version: 2.1.5
+Date: 2025-04-15
 Authors@R: c(person("Antonio", "D'Ambrosio", role = c("aut", "cre"), email = "antdambr@unina.it"), person("Sonia", "Amodio", role = "ctb"), person("Giulio", "Mazzeo", role = "ctb"), person("Alessandro", "Albano", role = "ctb"), person("Antonella", "Plaia", role = "ctb"))
 Maintainer: Antonio D'Ambrosio <antdambr@unina.it>
 Depends: rgl
@@ -25,12 +25,12 @@ License: GPL-3
 Encoding: UTF-8
 URL: https://www.r-project.org/
 Repository: CRAN
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 NeedsCompilation: no
-Packaged: 2024-01-24 09:38:51 UTC; Antonio
+Packaged: 2025-04-15 15:35:03 UTC; Antonio
 Author: Antonio D'Ambrosio [aut, cre],
   Sonia Amodio [ctb],
   Giulio Mazzeo [ctb],
   Alessandro Albano [ctb],
   Antonella Plaia [ctb]
-Date/Publication: 2024-01-24 11:22:51 UTC
+Date/Publication: 2025-04-15 16:40:06 UTC
