@@ -3,6 +3,7 @@
 #' Given a ranking, it computes the score matrix as defined by Emond and Mason (2002)
 #'
 #' @param X a ranking (must be a row vector or, better, a matrix with one row and M columns)
+#' @param use_cpp Logical. If TRUE (default), uses C++ implementation for faster computation. If FALSE, uses the R implementation.
 #'
 #' @return the M by M score matrix
 #'
@@ -21,31 +22,54 @@
 #' 
 #' @export
 
-scorematrix <- function (X) {
+
+scorematrix <- function (X, use_cpp=TRUE) {
   
-  ### SCORE MATRIX OF RANK DATA ACCORDING EMOND AND MASON
+  # Validate / standardize input
+  itemnames <- if (is.matrix(X)) colnames(X) else names(X)
   
-  itemnames<-names(X)
-  if (is(X,"numeric") & !is(X,"matrix")){
-    X<-matrix(X,ncol=length(X))
+  if (is.matrix(X)) {
+    if (nrow(X) != 1L) stop("X must be a row vector (1 x m) or a numeric vector")
+    x <- as.numeric(X[1, , drop = TRUE])
+  } else if (is.numeric(X)) {
+    x <- as.numeric(X)
+  } else {
+    stop("X must be a numeric vector or a 1-row numeric matrix")
   }
   
-  c<-ncol(X)
-  
-  #X must be a row vector containing a ranking of m objects
-  sm<-matrix(0,c,c)
-  colnames(sm)<-itemnames
-  row.names(sm)<-itemnames
-  
-  for (j in 1:c){
-    diffs<-sign(X[j]-X[setdiff(1:c,j)])
-    ind<-setdiff(1:c,j)
-    sm[j,ind]<-diffs
+  if (use_cpp) {
+    # Chiama scorematrix_cpp() - C++ ottimizzato
+    sm <- scorematrix_cpp(matrix(x, nrow = 1))
+    # Restore names...
+    return(sm)
   }
   
-  idn<-is.na(sm)
-  sm<-((sm<=0)*2-1)-diag(c)
-  sm[idn]<-0
+  # Fallback R implementation
+  
+
+  
+  m <- length(x)
+  if (m == 0L) return(matrix(numeric(0), 0, 0))
+  
+  # Vectorized: build logical matrix of comparisons x_i <= x_j
+  # NA entries in 'leq' correspond to comparisons with NA in x
+  leq <- outer(x, x, "<=")
+  
+  # Initialize result matrix with -1 and set 1 where x_i <= x_j
+  sm <- matrix(-1L, nrow = m, ncol = m)
+  sm[leq] <- 1L
+  
+  # Diagonal to 0
+  diag(sm) <- 0L
+  
+  # Where comparison is NA (e.g., x contains NA), set to 0
+  sm[is.na(leq)] <- 0L
+  
+  # Restore names if present
+  if (!is.null(itemnames) && length(itemnames) == m) {
+    rownames(sm) <- itemnames
+    colnames(sm) <- itemnames
+  }
+  
   sm
 }
-

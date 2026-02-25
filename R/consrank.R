@@ -13,6 +13,7 @@
 #' @param ff For DECOR algorithm only: the scaling rate for mutation. Must be in [0,1]. ff=0.4 is the default option.
 #' @param cr For DECOR algorithm only: the crossover range. Must be in [0,1]. cr=0.9 is the default option.
 #' @param proc For BB algorithm only: proc=TRUE allows the branch and bound algorithm to work in difficult cases, i.e. when the number of objects is larger than 15 or 25. proc=FALSE is the default option
+#' @param use_cpp Logical. If TRUE (default), uses C++ implementation for faster computation. If FALSE, uses the R implementation.
 #' 
 #' @details The BB algorithm can take long time to find the solutions if the number objects to be ranked is 
 #' large with some missing (>15-20 if full=FALSE, <25-30 if full=TRUE). 
@@ -89,7 +90,8 @@
 
 
 
-consrank<-function(X,wk=NULL,ps=TRUE,algorithm="BB",full=FALSE,itermax=10,np=15,gl=100,ff=0.4,cr=0.9,proc=FALSE){
+#consrank<-function(X,wk=NULL,ps=TRUE,algorithm="BB",full=FALSE,itermax=10,np=15,gl=100,ff=0.4,cr=0.9,proc=FALSE){
+consrank <- function(X, wk=NULL, ps=TRUE, algorithm="BB", full=FALSE, itermax=10, np=15, gl=100, ff=0.4, cr=0.9, proc=FALSE, use_cpp=TRUE) {
   # X:         a N by M data matrix in which there are N judges and M objects to be judged. 
   #            Each row is a ranking of the objects which are represented by the columns. 
   #            Alternatively X can contain the rankings observed only once in the sample. 
@@ -106,6 +108,24 @@ consrank<-function(X,wk=NULL,ps=TRUE,algorithm="BB",full=FALSE,itermax=10,np=15,
   #            (only if algorithm="Decor", defaul 100)
   # ff:        The scaling rate for mutation. Must be in [0,1] (only if algorithm="Decor", defaul 0.4)
   # cr:        The crossover range. Must be in [0,1] (only if algorithm="Decor", defaul 0.9)
+  
+  
+  # ══════════════════════════════════════════════════════════
+  # TEST C++ AVAILABILITY - ONLY ONCE
+  # ══════════════════════════════════════════════════════════
+  cpp_available <- FALSE
+  if (use_cpp) {
+    cpp_available <- tryCatch({
+      # Test veloce: chiama funzione C++ con input minimo
+      test_matrix <- matrix(c(1, 2, 2, 1), 2, 2)
+      test_result <- PenaltyBB2_impl(test_matrix, c(1, 2), c(1, 2))
+      TRUE  # Se arriva qui, C++ funziona
+    }, error = function(e) {
+      warning("C++ not available, using R implementation: ", e$message)
+      FALSE
+    })
+  }
+  
   
   
   if (is(X,"data.frame")) {
@@ -125,7 +145,7 @@ consrank<-function(X,wk=NULL,ps=TRUE,algorithm="BB",full=FALSE,itermax=10,np=15,
                or if there are few judges, choose another algorthm (Quick, FAST or DECOR). If you want use the Branch-and-bound algorithm, then 
                set proc="TRUE"')
         #end check 1
-      } else {out <- EMConsn(X,Wk=wk,PS=ps)}#end condition full false   
+      } else {out <- EMConsn(X,Wk=wk,PS=ps,use_cpp=cpp_available)}#end condition full false   
       
       
     } else if (full==TRUE & proc==FALSE) { 
@@ -137,43 +157,43 @@ consrank<-function(X,wk=NULL,ps=TRUE,algorithm="BB",full=FALSE,itermax=10,np=15,
                or if there are few judges, choose another algorthm (Quick, FAST or DECOR). If you want use the Branch-and-bound algorithm, then 
                set proc="TRUE"')
         #end check 2
-      } else { out <- BBFULLn(X,Wk=wk,PS=ps) }#end condition full true 
+      } else { out <- BBFULLn(X,Wk=wk,PS=ps,use_cpp=cpp_available) }#end condition full true 
       
     } else if (full==FALSE & proc==TRUE){
       
-      out <- EMConsn(X,Wk=wk,PS=ps)
+      out <- EMConsn(X,Wk=wk,PS=ps,use_cpp=cpp_available)
       
     } else if (full==TRUE & proc==TRUE){
       
-      out <- BBFULLn(X,Wk=wk,PS=ps)
+      out <- BBFULLn(X,Wk=wk,PS=ps,use_cpp=cpp_available)
       
     }
     
   } #end BB
-    
-    
-    
- 
+  
+  
+  
+  
   #-- Quick algorithm
   
   if (algorithm=="quick") {
-    out <- QuickConsn(X,Wk=wk, FULL=full, PS=ps)
+    out <- QuickConsn(X,Wk=wk, FULL=full, PS=ps, use_cpp=cpp_available)
   } 
   
   #-- FAST algorithm
   
   if (algorithm=="fast"){
-    out <- FASTconsn(X, Wk=wk, maxiter=itermax, FULL=full, PS=ps)
+    out <- FASTconsn(X, Wk=wk, maxiter=itermax, FULL=full, PS=ps, use_cpp=cpp_available)
   } 
   
   #-- DECOR
   
   if (algorithm=="decor"){
-    out<-FASTDECORn(X,Wk=wk,maxiter=itermax,NP=np,L=gl,FF=ff,CR=cr,FULL=full,PS=ps)
+    out<-FASTDECORn(X,Wk=wk,maxiter=itermax,NP=np,L=gl,FF=ff,CR=cr,FULL=full,PS=ps,use_cpp=cpp_available)
   }
   
   return(out)
-
+  
 }
 #---------------------------------------------------------------------------------------------------------------------
 
@@ -189,7 +209,7 @@ breakties<-function(X){
 
 #----------------------------------------------------------------------------------------------------------------------------
 
-EMConsn <- function(X,Wk=NULL,PS=TRUE)  {
+EMConsn <- function(X,Wk=NULL,PS=TRUE,use_cpp=TRUE)  {
   #Emond and Mason Branch and Bound algorithm to find median ranking
   #X is a data matrix in which the rows are the judges and the columns indicates the objects
   #Wk is the vector of weigths
@@ -218,9 +238,9 @@ EMConsn <- function(X,Wk=NULL,PS=TRUE)  {
         Wk<-matrix(Wk,ncol=1)
       }
       
-      cij <- combinpmatr(X,Wk)
+      cij <- combinpmatr(X,Wk,use_cpp=use_cpp)
     } else {
-      cij <- combinpmatr(X)
+      cij <- combinpmatr(X,use_cpp=use_cpp)
     }
     
     ##some adjustment made on march 2023
@@ -236,7 +256,7 @@ EMConsn <- function(X,Wk=NULL,PS=TRUE)  {
       print("Combined Input Matrix contains only positive values: the median ranking is the all-tie solution")
       cr <- matrix(rep(1,N), nrow=1)
       
-      Sij <-scorematrix(cr)
+      Sij <-scorematrix(cr,use_cpp=use_cpp) 
       
       if (!is(Wk,"NULL")){
         
@@ -254,55 +274,55 @@ EMConsn <- function(X,Wk=NULL,PS=TRUE)  {
     #end adjustment
     
     R<-findconsensusBB(cij)
-    cons1<-BBconsensus(R,cij,FULL=FALSE,PS=FALSE)
+    cons1<-BBconsensus(R,cij,FULL=FALSE,PS=FALSE,use_cpp=use_cpp)
     consensus1<-cons1$cons
     Po<-cons1$pen
-    consensus<-BBconsensus2(consensus1,cij,Po,PS=callps,FULL=FALSE)
+    consensus<-BBconsensus2(consensus1,cij,Po,PS=callps,FULL=FALSE,use_cpp=use_cpp)
     
     if (nrow(consensus)==1) {
       
-      Sij <-scorematrix(consensus)
+      Sij <-scorematrix(consensus,use_cpp=use_cpp)
       
       if (!is(Wk,"NULL")){
         
         TauX<-sum(cij*Sij) / ( sum(Wk)* (N*(N-1)) )
         
-        } else {
-          
-          TauX<-sum(cij*Sij) / (  M*(N*(N-1)) )
-          
-        }
-      
-      
       } else {
         
-        TauX<-matrix(0,nrow(consensus),1)
+        TauX<-sum(cij*Sij) / (  M*(N*(N-1)) )
         
-        for (k in 1:nrow(consensus)) {
+      }
+      
+      
+    } else {
+      
+      TauX<-matrix(0,nrow(consensus),1)
+      
+      for (k in 1:nrow(consensus)) {
+        
+        Sij<-scorematrix(t(matrix(consensus[k,])),use_cpp=use_cpp)
+        
+        if (!is(Wk,"NULL")) {
           
-          Sij<-scorematrix(t(matrix(consensus[k,])))
+          TauX[k,1] <- sum(cij*Sij) / ( sum(Wk)*(N*(N-1)) )
           
-          if (!is(Wk,"NULL")) {
-            
-            TauX[k,1] <- sum(cij*Sij) / ( sum(Wk)*(N*(N-1)) )
-            
-            } else {
-              
-              
-              TauX[k,1] <- sum(cij*Sij) / (M*(N*(N-1)))
-              
-              
-            }
+        } else {
+          
+          
+          TauX[k,1] <- sum(cij*Sij) / (M*(N*(N-1)))
           
           
         }
         
         
       }
+      
+      
+    }
     
     
   }
-
+  
   toc <- proc.time()[3]
   colnames(consensus)<-colnames(X) 
   #consensus<-reordering(consensus)
@@ -382,7 +402,7 @@ findconsensusBB <- function(cij,FULL=FALSE) {
 
 #--------------------------------------------------------------------------------------------------
 
-BBconsensus <- function(RR,cij,FULL=FALSE,PS=FALSE) {
+BBconsensus <- function(RR,cij,FULL=FALSE,PS=FALSE, use_cpp=TRUE) {
   
   #Branch and Bound Algorithm to find the the consensus ranking PART I As modified by D'AMBROSIO (2008).
   #Find the first approximation to the consensus ranking. Most of the time CR
@@ -398,7 +418,7 @@ BBconsensus <- function(RR,cij,FULL=FALSE,PS=FALSE) {
   #References: Amodio et al.,2015; D'Ambrosio et al., 2016.
   
   CR<-RR
-  sij<-scorematrix(RR)
+  sij<-scorematrix(RR, use_cpp=use_cpp)
   Po <- sum(abs(cij))-sum(cij*sij)
   a <- t(matrix(sort(RR,decreasing = TRUE)))
   ord <- t(matrix(order(RR,decreasing = TRUE)))
@@ -409,7 +429,8 @@ BBconsensus <- function(RR,cij,FULL=FALSE,PS=FALSE) {
   for (k in 2:length(a)) {
     #print(k)
     b <- 1:k
-    R <- ReorderingBB(R)
+    #R <- ReorderingBB(R)
+    R <- ReorderingBB(R, use_cpp=use_cpp)
     KR<-t(matrix(R[ord[b]]))
     KR<-KR[-length(KR)]
     MO<-max(KR)
@@ -418,11 +439,13 @@ BBconsensus <- function(RR,cij,FULL=FALSE,PS=FALSE) {
     KO<-1
     KR[length(KR)+1]<-MO+1
     R[ord[b]]<-KR
-    candidate<-matrix(0,nrow(RR), ncol(RR))
-    Pb <- matrix(0, 1, 1)
+    # candidate<-matrix(0,nrow(RR), ncol(RR))
+    # Pb <- matrix(0, 1, 1)
+    candidate <- Pb <- list()
     while (KO==1)  {
       #browser()
-      candidate<-rbind(candidate,R)
+      #candidate<-rbind(candidate,R)
+      candidate[[aa]] <- R
       #if (ncol(candidate>ncol(RR))) {
       
       #print(dim(candidate))
@@ -431,20 +454,22 @@ BBconsensus <- function(RR,cij,FULL=FALSE,PS=FALSE) {
       #print(class(R))
       
       # }
-      if (aa==1){
-        candidate<-matrix(candidate[-1,],1,ncol(candidate))
-      }
+      # if (aa==1){ #prima c'era questo
+      #   candidate<-matrix(candidate[-1,],1,ncol(candidate))
+      # }
       
-      Sij<-scorematrix(matrix(candidate[aa,],1,ncol(R)))
+      ##Sij<-scorematrix(matrix(candidate[aa,],1,ncol(R)))
+      Sij <- scorematrix(matrix(R, 1, ncol(R)), use_cpp=use_cpp)
       # print(Sij)
       #print(candidate)
       #flush.console()
-      Pb<-rbind(Pb,sum(abs(cij))-sum(cij*Sij))
-      if (aa==1) {
-        Pb<-matrix(Pb[-1,],1,1)
-      }
+      ##Pb<-rbind(Pb,sum(abs(cij))-sum(cij*Sij))
+      Pb[[aa]] <- sum(abs(cij))-sum(cij*Sij)
+      # if (aa==1) { #prima c'era questo
+      #   Pb<-matrix(Pb[-1,],1,1)
+      # }
       # print(Pb)
-      if (Pb[aa]==0) {
+      if (Pb[[aa]]==0) {
         
         CR <- R
         Po <- 0
@@ -453,14 +478,24 @@ BBconsensus <- function(RR,cij,FULL=FALSE,PS=FALSE) {
       }
       Pc<-1
       if(FULL==TRUE){
-        R[ord[b[length(b)]]] <- R[ord[b[length(b)]]]-2 }else{
-          R[ord[b[length(b)]]] <- R[ord[b[length(b)]]]-1
-        }
+        R[ord[b[length(b)]]] <- R[ord[b[length(b)]]]-2 
+      }else{
+        R[ord[b[length(b)]]] <- R[ord[b[length(b)]]]-1
+      }
       if (MI-R[ord[b[length(b)]]] > 1) {
         KO <- 0
       }
       aa<-aa+1
       
+    }
+    
+    # Converti liste a matrici DOPO il loop
+    if (length(candidate) > 0) {
+      candidate <- do.call(rbind, candidate)
+      Pb <- matrix(unlist(Pb), ncol=1)
+    } else {
+      candidate <- matrix(0, nrow(RR), ncol(RR))
+      Pb <- matrix(0, 1, 1)
     }
     
     if (PS==TRUE) {
@@ -481,10 +516,10 @@ BBconsensus <- function(RR,cij,FULL=FALSE,PS=FALSE) {
       Po<-minp
       CR<-t(matrix(candidate[posp[1],]))
       R<-CR
-      addpenalty[k,1]<-PenaltyBB2(cij,R,ord[b])
+      addpenalty[k,1]<-PenaltyBB2(cij,R,ord[b],use_cpp=use_cpp)
     } else {
       R <- CR
-      addpenalty[k,1]<-PenaltyBB2(cij,R,ord[b])
+      addpenalty[k,1]<-PenaltyBB2(cij,R,ord[b],use_cpp=use_cpp)
     }
     
     candidate <- mat.or.vec(nrow(R), ncol(R))
@@ -499,7 +534,7 @@ BBconsensus <- function(RR,cij,FULL=FALSE,PS=FALSE) {
     Poo<-sum(addpenalty)
   }
   
-  SIJ <- scorematrix(CR)
+  SIJ <- scorematrix(CR, use_cpp=use_cpp)
   Po<-sum(addpenalty)
   
   return(list(cons=CR,pen=Po))
@@ -507,14 +542,15 @@ BBconsensus <- function(RR,cij,FULL=FALSE,PS=FALSE) {
 
 #------------------------------------------------------------------------------------------------------------------------------
 
-BBconsensus2 <- function(RR,cij,Po,PS=TRUE,FULL=FALSE) {
+BBconsensus2 <- function(RR,cij,Po,PS=TRUE,FULL=FALSE,use_cpp=use_cpp) {
   ##Core code for the computation of the consensus ranking. Branch-and-bound 
   ##algorithm by Emond and Mason
   ForFULL<-FULL
   CR<-RR
   a <- t(matrix(sort(RR)))
   ord <- t(matrix(order(RR)))
-  r<-ReorderingBB(RR)
+  #r<-ReorderingBB(RR)
+  r <- ReorderingBB(RR, use_cpp=use_cpp)
   BR.R<-r #initialize ranking
   BR.P<-0 #initialize penalty
   WCi<-1
@@ -535,53 +571,82 @@ BBconsensus2 <- function(RR,cij,Po,PS=TRUE,FULL=FALSE) {
       b<-1:k
       
       
-      for (nb in 1:B) { #Secondary loop:  check the branches created by "nb"
+      # Pre-allocazione con liste
+      KR.R_list <- list()
+      KR.P_list <- list()
+      list_idx <- 0
+      
+      for (nb in 1:B) { #new secondary loop
+        BR.R[nb,] <- ReorderingBB(t(matrix(BR.R[nb,])), use_cpp=use_cpp)
+        rpbr <- branches(matrix(BR.R[nb,],1,), cij, b, Po, ord, matrix(BR.P[nb]), FULL=ForFULL, use_cpp=use_cpp)
+        R <- rpbr$cR
+        Pbr <- rpbr$pcR
         
-        BR.R[nb,] <- ReorderingBB(t(matrix(BR.R[nb,])))
-        rpbr<-branches(matrix(BR.R[nb,],1,),cij,b,Po,ord,matrix(BR.P[nb]),FULL=ForFULL)
-        R<-rpbr$cR
-        Pbr<-rpbr$pcR     
-        #        print(nrow(R))
-        #        flush.console()
-        
-        
-        if (is.null(R)) {
-          
-          #if (nb==1) {
-          #
-          #    JR=0
-          #    
-          #    next
-          #    
-          #} else {     
-          
-          next
-          
-          #}
-        } else {         #process good rankings
-          
-          if (nb==1) {     #starting point
-            
-            #JR=nrow(R)
-            
-            KR.R<-R
-            KR.P<-Pbr
-            
-            
-            
-          } else {   #it is not the starting point
-            
-            KR.R<-rbind(KR.R,R)
-            KR.P<-rbind(KR.P,Pbr)
-            
-            
-          }
-          
+        if (!is.null(R)) {
+          list_idx <- list_idx + 1
+          KR.R_list[[list_idx]] <- R
+          KR.P_list[[list_idx]] <- Pbr
         }
-        
-        #JR = nrow(KR.R)  #update size of branches
-        
-      } #end secondary loop
+      }
+      
+      # Converti liste a matrici DOPO il loop
+      if (list_idx > 0) {
+        KR.R <- do.call(rbind, KR.R_list)
+        KR.P <- do.call(rbind, KR.P_list)
+      } else {
+        KR.R <- NULL
+        KR.P <- NULL
+      } #end new secondary loop
+      
+      # for (nb in 1:B) { #Secondary loop:  check the branches created by "nb"
+      #   
+      #   #BR.R[nb,] <- ReorderingBB(t(matrix(BR.R[nb,])))
+      #   BR.R[nb,] <- ReorderingBB(t(matrix(BR.R[nb,])), use_cpp=use_cpp)
+      #   #rpbr<-branches(matrix(BR.R[nb,],1,),cij,b,Po,ord,matrix(BR.P[nb]),FULL=ForFULL)
+      #   rpbr <- branches(matrix(BR.R[nb,],1,), cij, b, Po, ord, matrix(BR.P[nb]), FULL=ForFULL, use_cpp=use_cpp)
+      #   R<-rpbr$cR
+      #   Pbr<-rpbr$pcR     
+      #   #        print(nrow(R))
+      #   #        flush.console()
+      #   
+      #   
+      #   if (is.null(R)) {
+      #     
+      #     #if (nb==1) {
+      #     #
+      #     #    JR=0
+      #     #    
+      #     #    next
+      #     #    
+      #     #} else {     
+      #     
+      #     next
+      #     
+      #     #}
+      #   } else {         #process good rankings
+      #     
+      #     if (nb==1) {     #starting point
+      #       
+      #       #JR=nrow(R)
+      #       
+      #       KR.R<-R
+      #       KR.P<-Pbr
+      #       
+      #       
+      #       
+      #     } else {   #it is not the starting point
+      #       
+      #       KR.R<-rbind(KR.R,R)
+      #       KR.P<-rbind(KR.P,Pbr)
+      #       
+      #       
+      #     }
+      #     
+      #   }
+      #   
+      #   #JR = nrow(KR.R)  #update size of branches
+      #   
+      # } #end secondary loop
       
       if (is.null(R)) {
         
@@ -617,7 +682,7 @@ BBconsensus2 <- function(RR,cij,Po,PS=TRUE,FULL=FALSE) {
       
       if (PS==TRUE) {
         
-        dsp2<-paste("evaluating",B,"branches",sep=" ")
+        dsp2<-paste("evaluated",B,"branches",sep=" ")
         print(dsp2)
         
       }
@@ -660,61 +725,182 @@ BBconsensus2 <- function(RR,cij,Po,PS=TRUE,FULL=FALSE) {
 }
 
 #--------------------------------------------------------------------------------------
-
-branches <- function(brR,cij,b,Po,ord,Pb,FULL=FALSE) {
+# branches <- function(brR, cij, b, Po, ord, Pb, FULL=FALSE, use_cpp=TRUE) {
+#   
+#   candidate <- findbranches(brR, ord, b, FULL, use_cpp=use_cpp)
+#   n_cand <- nrow(candidate)
+#   
+#   # Pre-alloca vettori (più efficiente)
+#   addpenalty <- numeric(n_cand)
+#   
+#   # Calcola penalty per tutti i candidati (vettorizzato quando possibile)
+#   for (gm in 1:n_cand) {
+#     addpenalty[gm] <- PenaltyBB2(cij, candidate[gm,], ord[b],use_cpp=use_cpp)
+#   }
+#   
+#   # Calcola Pbr vettorizzato
+#   Pbr <- addpenalty + Pb
+#   
+#   # Filtra candidati validi (vettorizzato)
+#   valid_mask <- (Pbr <= Po)
+#   
+#   if (!any(valid_mask)) {
+#     # Nessun candidato valido
+#     return(list(cR=NULL, pcR=NULL))
+#   }
+#   
+#   # Estrai candidati validi
+#   R <- candidate[valid_mask, , drop=FALSE]
+#   Pbr_valid <- Pbr[valid_mask]
+#   
+#   # Converti a matrice se necessario
+#   if (nrow(R) == 1) {
+#     R <- matrix(R, 1, ncol(candidate))
+#   }
+#   
+#   return(list(cR=R, pcR=matrix(Pbr_valid, ncol=1)))
+# }
+# #OLD
+branches <- function(brR, cij, b, Po, ord, Pb, FULL=FALSE, use_cpp=TRUE) {
   
-  candidate <- findbranches(brR,ord,b,FULL)
-  Pb <- matrix( rep(Pb,nrow(candidate)))
+  candidate <- findbranches(brR, ord, b, FULL, use_cpp=use_cpp)
   
-  CR<-mat.or.vec(nrow(candidate),ncol(candidate))
-  addpenalty<-matrix(0,nrow(candidate),1)
-  QR<-mat.or.vec(nrow(candidate),ncol(candidate))
+  if (use_cpp) {
+    ord_subset <- ord[b]  # ← IMPORTANTE: passa solo ord[b], non ord completo!
+    
+    Pb_vec <- rep(Pb, nrow(candidate))
+    addpenalty <- PenaltyBB2_batch_impl(cij, candidate, ord_subset)
+    Pbr <- addpenalty + Pb_vec
+    
+    valid_idx <- which(Pbr <= Po)
+    
+    if (length(valid_idx) == 0) {
+      return(list(cR = NULL, pcR = NULL))
+    }
+    
+    R <- candidate[valid_idx, , drop=FALSE]
+    if (nrow(R) == 1) {
+      R <- matrix(R, 1, ncol(candidate))
+    }
+    Pbr_valid <- matrix(Pbr[valid_idx], length(valid_idx), 1)
+    
+    return(list(cR = R, pcR = Pbr_valid))
+  }
+  
+  # ══════════════════════════════════════════════════════════
+  # FALLBACK: Implementazione R con loop
+  # ══════════════════════════════════════════════════════════
+  
+  # Original R implementation
+  Pb <- matrix(rep(Pb, nrow(candidate)))
+  CR <- mat.or.vec(nrow(candidate), ncol(candidate))
+  addpenalty <- matrix(0, nrow(candidate), 1)
+  QR <- mat.or.vec(nrow(candidate), ncol(candidate))
   
   for (gm in 1:nrow(candidate)) {
+    CR[gm,] <- candidate[gm,]
+    addpenalty[gm,] <- PenaltyBB2(cij, candidate[gm,], ord[b], use_cpp=use_cpp)  # ← ord[b]!
     
-    CR[gm,]<-candidate[gm,]
-    addpenalty[gm,]<-PenaltyBB2(cij,candidate[gm,],ord[b])
-    
-    if ( (Pb[gm]+addpenalty[gm,]) > Po) {
-      
-      #      CR[gm,]=-10.0e+15
-      #      addpenalty[gm]=-10.0e+15
-      CR[gm,]<-NA
-      addpenalty[gm,]<-NA      
-      
+    if ((Pb[gm] + addpenalty[gm,]) > Po) {
+      CR[gm,] <- NA
+      addpenalty[gm,] <- NA
     }
-    QR[gm,]<-CR[gm,]
+    QR[gm,] <- CR[gm,]
   }
-  Pbr<-addpenalty+Pb
-  #  idp=Pbr<0
-  idp<-which(is.na(Pbr))
   
-  if (length(idp)==0) {
-    
-    R<-QR
-    
-  } else if (length(idp)==nrow(QR)) {
-    
-    Pbr<-NULL
-    Pb<-NULL
-    R<-NULL
-    
+  Pbr <- addpenalty + Pb
+  idp <- which(is.na(Pbr))
+  
+  if (length(idp) == 0) {
+    R <- QR
+  } else if (length(idp) == nrow(QR)) {
+    Pbr <- NULL
+    Pb <- NULL
+    R <- NULL
   } else {
-    #    Pbr=t(matrix(Pbr[idp==FALSE,],1))
-    #    if (sum(idp==F)==1) {
-    #      R=t(matrix(QR[idp==FALSE,]))
-    #    } else {
-    #      R=QR[idp==FALSE,]
-    #    }
-    
-    Pbr<-matrix(Pbr[-idp],length(Pbr[-idp]),1)
-    R<-QR[-idp,]
-    if (is(nrow(R),"NULL")){R<-matrix(R,1,length(R))}
-    
+    Pbr <- matrix(Pbr[-idp], length(Pbr[-idp]), 1)
+    R <- QR[-idp, ]
+    if (is(nrow(R), "NULL")) {
+      R <- matrix(R, 1, length(R))
+    }
   }
   
-  return(list(cR=R,pcR=Pbr))
+  return(list(cR = R, pcR = Pbr))
 }
+
+# branches <- function(brR, cij, b, Po, ord, Pb, FULL=FALSE, use_cpp=use_cpp) {
+#   
+#   # Generate candidates
+#   use_cpp_val <- use_cpp  # Forza valutazione
+#   candidate <- findbranches(brR, ord, b, FULL, use_cpp=FALSE) #ho cambiato
+#   
+#   # Use C++ batch processing if available
+#   if (use_cpp) {
+#     tryCatch({
+#       # Batch compute all penalties at once in C++
+#       Pb_vec <- rep(Pb, nrow(candidate))
+#       addpenalty <- PenaltyBB2_batch_impl(cij, candidate, ord)
+#       Pbr <- addpenalty + Pb_vec
+#       
+#       # Filter candidates where penalty > Po
+#       valid_idx <- which(Pbr <= Po)
+#       
+#       if (length(valid_idx) == 0) {
+#         return(list(cR = NULL, pcR = NULL))
+#       }
+#       
+#       R <- candidate[valid_idx, , drop=FALSE]
+#       if (nrow(R) == 1) {
+#         R <- matrix(R, 1, ncol(candidate))
+#       }
+#       Pbr_valid <- matrix(Pbr[valid_idx], length(valid_idx), 1)
+#       
+#       return(list(cR = R, pcR = Pbr_valid))
+#       
+#     }, error = function(e) {
+#       warning("C++ branches failed, using R: ", e$message)
+#       # Fall through to R implementation
+#     })
+#   }
+#   
+#   # Original R implementation (fallback)
+#   Pb <- matrix(rep(Pb, nrow(candidate)))
+#   
+#   CR <- mat.or.vec(nrow(candidate), ncol(candidate))
+#   addpenalty <- matrix(0, nrow(candidate), 1)
+#   QR <- mat.or.vec(nrow(candidate), ncol(candidate))
+#   
+#   for (gm in 1:nrow(candidate)) {
+#     CR[gm, ] <- candidate[gm, ]
+#     #addpenalty[gm, ] <- PenaltyBB2(cij, candidate[gm, ], ord, use_cpp=FALSE)
+#     addpenalty[gm, ] <- PenaltyBB2(cij, candidate[gm, ], ord, use_cpp=use_cpp)
+#     
+#     if ((Pb[gm] + addpenalty[gm, ]) > Po) {
+#       CR[gm, ] <- NA
+#       addpenalty[gm, ] <- NA
+#     }
+#     QR[gm, ] <- CR[gm, ]
+#   }
+#   
+#   Pbr <- addpenalty + Pb
+#   idp <- which(is.na(Pbr))
+#   
+#   if (length(idp) == 0) {
+#     R <- QR
+#   } else if (length(idp) == nrow(QR)) {
+#     Pbr <- NULL
+#     Pb <- NULL
+#     R <- NULL
+#   } else {
+#     Pbr <- matrix(Pbr[-idp], length(Pbr[-idp]), 1)
+#     R <- QR[-idp, ]
+#     if (is(nrow(R), "NULL")) {
+#       R <- matrix(R, 1, length(R))
+#     }
+#   }
+#   
+#   return(list(cR = R, pcR = Pbr))
+# }
 
 #---------------------------------------------------------------------------------------
 
@@ -753,144 +939,439 @@ Penalty <- function(CR,cij,indice)   #indice must be order(CR)
 }
 
 #-----------------------------------------------------------------------------------------------------------
+#ORIGINALE
+# PenaltyBB2 <- function(cij,candidate,ord)   #indice must be order(CR)
+#   
+#   ## DETERMINATION OF PENALTIES FOR THE BRANCH AND BOUND ALGORITHM
+#   
+# {
+#   
+#   Ds<-t(mat.or.vec(1,(length(ord)-1)))
+#   addpenalty<-t(mat.or.vec(1,(length(ord)-1)))
+#   
+#   for (k in 1:(length(ord)-1)) {
+#     
+#     Ds[k,1]<-sign(candidate[ord[length(ord)]]-candidate[ord[k]])
+#     
+#     if (Ds[k,1]==1) {
+#       
+#       
+#       if ( sign(cij[ord[length(ord)],ord[k]]) == 1 & sign(cij[ord[k],ord[length(ord)]])  == -1 ) {
+#         addpenalty[k,1]<-cij[ord[length(ord)],ord[k]]-cij[ord[k],ord[length(ord)]]
+#       } else if ( sign(cij[ord[length(ord)],ord[k]]) == 1 & sign(cij[ord[k],ord[length(ord)]]) == 1  ||
+#                   sign(cij[ord[length(ord)],ord[k]]) == 0 & sign(cij[ord[k],ord[length(ord)]]) == 0  ||
+#                   sign(cij[ord[length(ord)],ord[k]]) == 1 & sign(cij[ord[k],ord[length(ord)]]) == 0  ||
+#                   sign(cij[ord[length(ord)],ord[k]]) == 0 & sign(cij[ord[k],ord[length(ord)]]) == 1) {
+#         addpenalty[k,1]<-cij[ord[length(ord)],ord[k]]
+#       } else if ( sign(cij[ord[length(ord)],ord[k]]) == -1 & sign(cij[ord[k],ord[length(ord)]]) == 1) {
+#         addpenalty[k,1]<-0
+#       }
+#     }
+#     else if (Ds[k,1]==-1) {
+#       if ( sign(cij[ord[length(ord)],ord[k]]) == 1 && sign(cij[ord[k],ord[length(ord)]])  == -1 ) {
+#         addpenalty[k,1]<-0
+#       } else if ( sign(cij[ord[length(ord)],ord[k]]) == 1 && sign(cij[ord[k],ord[length(ord)]]) == 1  ||
+#                   sign(cij[ord[length(ord)],ord[k]]) == 0 && sign(cij[ord[k],ord[length(ord)]]) == 0  ||
+#                   sign(cij[ord[length(ord)],ord[k]]) == 1 && sign(cij[ord[k],ord[length(ord)]]) == 0  ||
+#                   sign(cij[ord[length(ord)],ord[k]]) == 0 && sign(cij[ord[k],ord[length(ord)]]) == 1) {
+#         addpenalty[k,1]<-cij[ord[k],ord[length(ord)]]
+#       } else if ( sign(cij[ord[length(ord)],ord[k]]) == -1 && sign(cij[ord[k],ord[length(ord)]]) == 1) {
+#         addpenalty[k,1]<-cij[ord[k],ord[length(ord)]]-cij[ord[length(ord)],ord[k]]
+#       }
+#     }
+#     
+#     else if (Ds[k,1]==0) {
+#       if ( sign(cij[ord[length(ord)],ord[k]]) == 1 && sign(cij[ord[k],ord[length(ord)]])  == -1 ) {
+#         addpenalty[k,1] <- -cij[ord[k],ord[length(ord)]]
+#       } else if ( sign(cij[ord[length(ord)],ord[k]]) == 1 && sign(cij[ord[k],ord[length(ord)]]) == 1  ||
+#                   sign(cij[ord[length(ord)],ord[k]]) == 0 && sign(cij[ord[k],ord[length(ord)]]) == 0  ||
+#                   sign(cij[ord[length(ord)],ord[k]]) == 1 && sign(cij[ord[k],ord[length(ord)]]) == 0  ||
+#                   sign(cij[ord[length(ord)],ord[k]]) == 0 && sign(cij[ord[k],ord[length(ord)]]) == 1) {
+#         addpenalty[k,1]<-0
+#       } else if ( sign(cij[ord[length(ord)],ord[k]]) == -1 && sign(cij[ord[k],ord[length(ord)]]) == 1) {
+#         addpenalty[k,1]=-cij[ord[length(ord)],ord[k]]
+#       }
+#     }
+#   }
+#   
+#   addpenalty<-sum(addpenalty)
+#   
+# }
 
-PenaltyBB2 <- function(cij,candidate,ord)   #indice must be order(CR)
+
+################
+# VERSIONE OTTIMIZZATA DI PenaltyBB2 - VETTORIZZATA
+#---------------------------------------------------------------------------------------
+
+PenaltyBB2 <- function(cij, candidate, ord, use_cpp=TRUE) { #optimized
   
-  ## DETERMINATION OF PENALTIES FOR THE BRANCH AND BOUND ALGORITHM
-  
-{
-  
-  Ds<-t(mat.or.vec(1,(length(ord)-1)))
-  addpenalty<-t(mat.or.vec(1,(length(ord)-1)))
-  
-  for (k in 1:(length(ord)-1)) {
-    
-    Ds[k,1]<-sign(candidate[ord[length(ord)]]-candidate[ord[k]])
-    
-    if (Ds[k,1]==1) {
-      
-      
-      if ( sign(cij[ord[length(ord)],ord[k]]) == 1 & sign(cij[ord[k],ord[length(ord)]])  == -1 ) {
-        addpenalty[k,1]<-cij[ord[length(ord)],ord[k]]-cij[ord[k],ord[length(ord)]]
-      } else if ( sign(cij[ord[length(ord)],ord[k]]) == 1 & sign(cij[ord[k],ord[length(ord)]]) == 1  ||
-                  sign(cij[ord[length(ord)],ord[k]]) == 0 & sign(cij[ord[k],ord[length(ord)]]) == 0  ||
-                  sign(cij[ord[length(ord)],ord[k]]) == 1 & sign(cij[ord[k],ord[length(ord)]]) == 0  ||
-                  sign(cij[ord[length(ord)],ord[k]]) == 0 & sign(cij[ord[k],ord[length(ord)]]) == 1) {
-        addpenalty[k,1]<-cij[ord[length(ord)],ord[k]]
-      } else if ( sign(cij[ord[length(ord)],ord[k]]) == -1 & sign(cij[ord[k],ord[length(ord)]]) == 1) {
-        addpenalty[k,1]<-0
-      }
-    }
-    else if (Ds[k,1]==-1) {
-      if ( sign(cij[ord[length(ord)],ord[k]]) == 1 && sign(cij[ord[k],ord[length(ord)]])  == -1 ) {
-        addpenalty[k,1]<-0
-      } else if ( sign(cij[ord[length(ord)],ord[k]]) == 1 && sign(cij[ord[k],ord[length(ord)]]) == 1  ||
-                  sign(cij[ord[length(ord)],ord[k]]) == 0 && sign(cij[ord[k],ord[length(ord)]]) == 0  ||
-                  sign(cij[ord[length(ord)],ord[k]]) == 1 && sign(cij[ord[k],ord[length(ord)]]) == 0  ||
-                  sign(cij[ord[length(ord)],ord[k]]) == 0 && sign(cij[ord[k],ord[length(ord)]]) == 1) {
-        addpenalty[k,1]<-cij[ord[k],ord[length(ord)]]
-      } else if ( sign(cij[ord[length(ord)],ord[k]]) == -1 && sign(cij[ord[k],ord[length(ord)]]) == 1) {
-        addpenalty[k,1]<-cij[ord[k],ord[length(ord)]]-cij[ord[length(ord)],ord[k]]
-      }
-    }
-    
-    else if (Ds[k,1]==0) {
-      if ( sign(cij[ord[length(ord)],ord[k]]) == 1 && sign(cij[ord[k],ord[length(ord)]])  == -1 ) {
-        addpenalty[k,1] <- -cij[ord[k],ord[length(ord)]]
-      } else if ( sign(cij[ord[length(ord)],ord[k]]) == 1 && sign(cij[ord[k],ord[length(ord)]]) == 1  ||
-                  sign(cij[ord[length(ord)],ord[k]]) == 0 && sign(cij[ord[k],ord[length(ord)]]) == 0  ||
-                  sign(cij[ord[length(ord)],ord[k]]) == 1 && sign(cij[ord[k],ord[length(ord)]]) == 0  ||
-                  sign(cij[ord[length(ord)],ord[k]]) == 0 && sign(cij[ord[k],ord[length(ord)]]) == 1) {
-        addpenalty[k,1]<-0
-      } else if ( sign(cij[ord[length(ord)],ord[k]]) == -1 && sign(cij[ord[k],ord[length(ord)]]) == 1) {
-        addpenalty[k,1]=-cij[ord[length(ord)],ord[k]]
-      }
-    }
+  if (use_cpp) {
+    return(PenaltyBB2_impl(cij, candidate, ord))
   }
   
-  addpenalty<-sum(addpenalty)
+  # ══════════════════════════════════════════════════════════
+  # FALLBACK: Implementazione R vettorizzata
+  # ══════════════════════════════════════════════════════════
   
+  # Ottimizzazione: vettorizzazione completa
+  
+  n <- length(ord) - 1
+  if (n == 0) return(0)
+  
+  # Indici per l'ultimo elemento e gli altri
+  last_idx <- ord[length(ord)]
+  other_idx <- ord[1:n]
+  
+  # Calcola differenze di ranking (vettorizzato)
+  Ds <- sign(candidate[last_idx] - candidate[other_idx])
+  
+  # Estrai sottomatrici cij (vettorizzato)
+  c_last_other <- cij[last_idx, other_idx]
+  c_other_last <- cij[other_idx, last_idx]
+  
+  # Calcola segni (vettorizzato)
+  s_last_other <- sign(c_last_other)
+  s_other_last <- sign(c_other_last)
+  
+  # Inizializza penalty
+  addpenalty <- numeric(n)
+  
+  # CASO 1: Ds == 1 (candidate[last] > candidate[other])
+  mask1 <- (Ds == 1)
+  if (any(mask1)) {
+    # Sub-caso 1a: s_lo == 1 & s_ol == -1
+    mask1a <- mask1 & (s_last_other == 1) & (s_other_last == -1)
+    addpenalty[mask1a] <- c_last_other[mask1a] - c_other_last[mask1a]
+    
+    # Sub-caso 1b: condizioni OR multiple
+    mask1b <- mask1 & (
+      ((s_last_other == 1) & (s_other_last == 1)) |
+        ((s_last_other == 0) & (s_other_last == 0)) |
+        ((s_last_other == 1) & (s_other_last == 0)) |
+        ((s_last_other == 0) & (s_other_last == 1))
+    )
+    addpenalty[mask1b] <- c_last_other[mask1b]
+    
+    # Sub-caso 1c: s_lo == -1 & s_ol == 1
+    # addpenalty già 0, non serve fare nulla
+  }
+  
+  # CASO 2: Ds == -1 (candidate[last] < candidate[other])
+  mask2 <- (Ds == -1)
+  if (any(mask2)) {
+    # Sub-caso 2a: s_lo == 1 & s_ol == -1
+    # addpenalty già 0, non serve fare nulla
+    
+    # Sub-caso 2b: condizioni OR multiple
+    mask2b <- mask2 & (
+      ((s_last_other == 1) & (s_other_last == 1)) |
+        ((s_last_other == 0) & (s_other_last == 0)) |
+        ((s_last_other == 1) & (s_other_last == 0)) |
+        ((s_last_other == 0) & (s_other_last == 1))
+    )
+    addpenalty[mask2b] <- c_other_last[mask2b]
+    
+    # Sub-caso 2c: s_lo == -1 & s_ol == 1
+    mask2c <- mask2 & (s_last_other == -1) & (s_other_last == 1)
+    addpenalty[mask2c] <- c_other_last[mask2c] - c_last_other[mask2c]
+  }
+  
+  # CASO 3: Ds == 0 (tie)
+  mask3 <- (Ds == 0)
+  if (any(mask3)) {
+    # Sub-caso 3a: s_lo == 1 & s_ol == -1
+    mask3a <- mask3 & (s_last_other == 1) & (s_other_last == -1)
+    addpenalty[mask3a] <- -c_other_last[mask3a]
+    
+    # Sub-caso 3b: condizioni OR multiple
+    # addpenalty già 0, non serve fare nulla
+    
+    # Sub-caso 3c: s_lo == -1 & s_ol == 1
+    mask3c <- mask3 & (s_last_other == -1) & (s_other_last == 1)
+    addpenalty[mask3c] <- -c_last_other[mask3c]
+  }
+  
+  sum(addpenalty)
 }
+
+
+# ##############
+# PenaltyBB2 <- function(cij, candidate, ord, use_cpp=TRUE) {
+#   
+#   # Try C++ implementation first
+#   if (use_cpp) {
+#     tryCatch({
+#       return(PenaltyBB2_impl(cij, candidate, ord))
+#     }, error = function(e) {
+#       # If C++ fails, use R implementation below
+#     })
+#   }
+#   
+#   # Original R implementation
+#   Ds <- t(mat.or.vec(1, (length(ord) - 1)))
+#   addpenalty <- t(mat.or.vec(1, (length(ord) - 1)))
+#   
+#   for (k in 1:(length(ord) - 1)) {
+#     Ds[k, 1] <- sign(candidate[ord[length(ord)]] - candidate[ord[k]])
+#     
+#     if (Ds[k, 1] == 1) {
+#       if (sign(cij[ord[length(ord)], ord[k]]) == 1 & sign(cij[ord[k], ord[length(ord)]]) == -1) {
+#         addpenalty[k, 1] <- cij[ord[length(ord)], ord[k]] - cij[ord[k], ord[length(ord)]]
+#       } else if (sign(cij[ord[length(ord)], ord[k]]) == 1 & sign(cij[ord[k], ord[length(ord)]]) == 1 ||
+#                  sign(cij[ord[length(ord)], ord[k]]) == 0 & sign(cij[ord[k], ord[length(ord)]]) == 0 ||
+#                  sign(cij[ord[length(ord)], ord[k]]) == 1 & sign(cij[ord[k], ord[length(ord)]]) == 0 ||
+#                  sign(cij[ord[length(ord)], ord[k]]) == 0 & sign(cij[ord[k], ord[length(ord)]]) == 1) {
+#         addpenalty[k, 1] <- cij[ord[length(ord)], ord[k]]
+#       } else if (sign(cij[ord[length(ord)], ord[k]]) == -1 & sign(cij[ord[k], ord[length(ord)]]) == 1) {
+#         addpenalty[k, 1] <- 0
+#       }
+#     }
+#     else if (Ds[k, 1] == -1) {
+#       if (sign(cij[ord[length(ord)], ord[k]]) == 1 && sign(cij[ord[k], ord[length(ord)]]) == -1) {
+#         addpenalty[k, 1] <- 0
+#       } else if (sign(cij[ord[length(ord)], ord[k]]) == 1 && sign(cij[ord[k], ord[length(ord)]]) == 1 ||
+#                  sign(cij[ord[length(ord)], ord[k]]) == 0 && sign(cij[ord[k], ord[length(ord)]]) == 0 ||
+#                  sign(cij[ord[length(ord)], ord[k]]) == 1 && sign(cij[ord[k], ord[length(ord)]]) == 0 ||
+#                  sign(cij[ord[length(ord)], ord[k]]) == 0 && sign(cij[ord[k], ord[length(ord)]]) == 1) {
+#         addpenalty[k, 1] <- cij[ord[k], ord[length(ord)]]
+#       } else if (sign(cij[ord[length(ord)], ord[k]]) == -1 && sign(cij[ord[k], ord[length(ord)]]) == 1) {
+#         addpenalty[k, 1] <- cij[ord[k], ord[length(ord)]] - cij[ord[length(ord)], ord[k]]
+#       }
+#     }
+#     else if (Ds[k, 1] == 0) {
+#       if (sign(cij[ord[length(ord)], ord[k]]) == 1 && sign(cij[ord[k], ord[length(ord)]]) == -1) {
+#         addpenalty[k, 1] <- -cij[ord[k], ord[length(ord)]]
+#       } else if (sign(cij[ord[length(ord)], ord[k]]) == 1 && sign(cij[ord[k], ord[length(ord)]]) == 1 ||
+#                  sign(cij[ord[length(ord)], ord[k]]) == 0 && sign(cij[ord[k], ord[length(ord)]]) == 0 ||
+#                  sign(cij[ord[length(ord)], ord[k]]) == 1 && sign(cij[ord[k], ord[length(ord)]]) == 0 ||
+#                  sign(cij[ord[length(ord)], ord[k]]) == 0 && sign(cij[ord[k], ord[length(ord)]]) == 1) {
+#         addpenalty[k, 1] <- 0
+#       } else if (sign(cij[ord[length(ord)], ord[k]]) == -1 && sign(cij[ord[k], ord[length(ord)]]) == 1) {
+#         addpenalty[k, 1] <- -cij[ord[length(ord)], ord[k]]
+#       }
+#     }
+#   }
+#   
+#   addpenalty <- sum(addpenalty)
+#   return(addpenalty)
+# }
 
 #---------------------------------------------------------------------------------------------------------------------
-
-ReorderingBB <- function(RR) {
+#OLD
+# ReorderingBB2 <- function(RR) {
+# 
+#   RR <- RR+1
+#   R <- RR
+#   k <- ncol(R)
+#   neword <- order(R)
+#   indexing <- mat.or.vec(1, ncol(R)-1)
+#   for (j in (k-1):1) {
+#     indexing[j] <- R[neword[j+1]]-R[neword[j]]
+#   }
+# 
+#   if (sum(indexing==0)>0) {
+#     J <- 1
+#     while (J<=ncol(indexing)) {
+#       if (indexing[J]==0) {
+#         R[neword[J+1]]<-R[neword[J]]
+#         J<-J+1
+#       }
+#       else if (indexing[J]>0) {
+#         R[neword[J+1]] <- R[neword[J]]+2
+#         J<-J+1
+#       }
+#     }
+#   }
+#   else  {
+#     J <- 1
+#     while (J<= ncol(indexing)) {
+#       R[neword[J+1]] <- R[neword[J]] + 2
+#       J<-J+1
+#     }
+#   }
+#   R
+# }
+ReorderingBB <- function(RR,use_cpp=TRUE) {
   
-  RR <- RR+1
+  RR <- RR + 1
   R <- RR
-  k <- ncol(R)
+  k <- length(R)
+  
+  if (k == 1) return(R)
+  
   neword <- order(R)
-  indexing <- mat.or.vec(1, ncol(R)-1)
-  for (j in (k-1):1) {
-    indexing[j] <- R[neword[j+1]]-R[neword[j]]
+  
+  # Calcola differenze (vettorizzato)
+  diffs <- diff(R[neword])
+  
+  # Caso speciale: tutte le differenze > 0
+  if (all(diffs > 0)) {
+    # Tutti gli elementi sono distinti
+    R[neword] <- seq(2, by=2, length.out=k)
+    return(R)
   }
   
-  if (sum(indexing==0)>0) {
-    J <- 1
-    while (J<=ncol(indexing)) {
-      if (indexing[J]==0) {
-        R[neword[J+1]]<-R[neword[J]]
-        J<-J+1
-      }
-      else if (indexing[J]>0) {
-        R[neword[J+1]] <- R[neword[J]]+2
-        J<-J+1
-      }
+  # Caso generale: gestisci tie
+  new_ranks <- integer(k)
+  new_ranks[1] <- 2
+  
+  for (j in 1:(k-1)) {
+    if (diffs[j] == 0) {
+      # Tie: stesso rank
+      new_ranks[j+1] <- new_ranks[j]
+    } else {
+      # Diverso: rank successivo
+      new_ranks[j+1] <- new_ranks[j] + 2
     }
   }
-  else  {
-    J <- 1
-    while (J<= ncol(indexing)) {
-      R[neword[J+1]] <- R[neword[J]] + 2
-      J<-J+1
-    }
-  }
-  R
+  
+  R[neword] <- new_ranks
+  return(R)
 }
+
+
+
+##OLD
+# ReorderingBB <- function(RR, use_cpp=TRUE) {
+#   
+#   # Try C++ implementation first
+#   if (use_cpp) {
+#     tryCatch({
+#       return(ReorderingBB_impl(RR))
+#     }, error = function(e) {
+#       warning("C++ ReorderingBB failed, using R: ", e$message)
+#       # Fall through to R implementation
+#     })
+#   }
+#   
+#   # Original R implementation (fallback)
+#   RR <- RR + 1
+#   R <- RR
+#   k <- ncol(R)
+#   neword <- order(R)
+#   indexing <- mat.or.vec(1, ncol(R) - 1)
+#   for (j in (k - 1):1) {
+#     indexing[j] <- R[neword[j + 1]] - R[neword[j]]
+#   }
+#   
+#   if (sum(indexing == 0) > 0) {
+#     J <- 1
+#     while (J <= ncol(indexing)) {
+#       if (indexing[J] == 0) {
+#         R[neword[J + 1]] <- R[neword[J]]
+#         J <- J + 1
+#       }
+#       else if (indexing[J] > 0) {
+#         R[neword[J + 1]] <- R[neword[J]] + 2
+#         J <- J + 1
+#       }
+#     }
+#   }
+#   else {
+#     J <- 1
+#     while (J <= ncol(indexing)) {
+#       R[neword[J + 1]] <- R[neword[J]] + 2
+#       J <- J + 1
+#     }
+#   }
+#   return(R)
+# }
 
 #-------------------------------------------------------------------------------
 
+#OLD
 
-findbranches <- function(R,ord,b,FULL=FALSE) {
+# findbranches <- function(R,ord,b,FULL=FALSE, use_cpp=FALSE) {
+# 
+#   KR<-t(matrix(R[ord[b]]))
+#   KR<-KR[-length(KR)]
+#   MO<-max(KR)
+#   MI<-min(KR)
+#   aa<-1
+#   KO<-1
+#   KR[length(KR)+1]<-MO+1
+#   R[ord[b]]<-KR
+#   candidate<-mat.or.vec(nrow(R), ncol(R))
+# 
+#   while (KO==1)  {
+#     candidate<-rbind(candidate,R)
+# 
+#     if (aa==1){
+#       candidate<-matrix(candidate[-1,],1,ncol(candidate))
+#     }
+#     if (FULL==FALSE){
+#       R[ord[b[length(b)]]]<-R[ord[b[length(b)]]]-1 }else{
+#         R[ord[b[length(b)]]]<-R[ord[b[length(b)]]]-2
+#       }
+# 
+#     if (MI-R[ord[b[length(b)]]] > 1) {
+# 
+#       KO<-0
+# 
+#     }
+# 
+#     aa<-aa+1
+# 
+#   }
+# 
+#   Rt<-candidate
+# 
+# }
+
+findbranches <- function(R, ord, b, FULL=FALSE, use_cpp=TRUE) {
   
-  KR<-t(matrix(R[ord[b]]))
-  KR<-KR[-length(KR)]
-  MO<-max(KR)
-  MI<-min(KR)
-  aa<-1
-  KO<-1
-  KR[length(KR)+1]<-MO+1
-  R[ord[b]]<-KR
-  candidate<-mat.or.vec(nrow(R), ncol(R))
   
-  while (KO==1)  {
-    candidate<-rbind(candidate,R)
-    
-    if (aa==1){
-      candidate<-matrix(candidate[-1,],1,ncol(candidate))
+  
+  if (use_cpp) {
+    # IMPORTANTE: R deve essere matrice!
+    if (!is.matrix(R)) {
+      R <- matrix(R, nrow=1)
     }
-    if (FULL==FALSE){
-      R[ord[b[length(b)]]]<-R[ord[b[length(b)]]]-1 }else{
-        R[ord[b[length(b)]]]<-R[ord[b[length(b)]]]-2
-      }
-    
-    if (MI-R[ord[b[length(b)]]] > 1) {
-      
-      KO<-0
-      
-    }
-    
-    aa<-aa+1
-    
+    return(findbranches_impl(R, ord, b, FULL))
   }
   
-  Rt<-candidate
+  # ══════════════════════════════════════════════════════════
+  # FALLBACK: Implementazione R originale
+  # ══════════════════════════════════════════════════════════
+  #
+  # Original R implementation (fallback)
+  KR <- t(matrix(R[ord[b]]))
+  KR <- KR[-length(KR)]
+  MO <- max(KR)
+  MI <- min(KR)
+  aa <- 1
+  KO <- 1
+  KR[length(KR)+1] <- MO+1
+  R[ord[b]] <- KR
+  candidate <- mat.or.vec(nrow(R), ncol(R))
   
+  while (KO==1) {
+    candidate <- rbind(candidate, R)
+    
+    if (aa==1){
+      candidate <- matrix(candidate[-1,], 1, ncol(candidate))
+    }
+    
+    if (FULL==FALSE){
+      R[ord[b[length(b)]]] <- R[ord[b[length(b)]]] - 1
+    } else {
+      R[ord[b[length(b)]]] <- R[ord[b[length(b)]]] - 2
+    }
+    
+    if (MI - R[ord[b[length(b)]]] > 1) {
+      KO <- 0
+    }
+    
+    aa <- aa + 1
+  }
+  
+  Rt <- candidate
+  return(Rt)
 }
 
 #---------------------------------------------------------------------------------------------------
 
-QuickConsn <- function(X,Wk=NULL, FULL=FALSE,PS=FALSE)   {
+QuickConsn <- function(X,Wk=NULL, FULL=FALSE,PS=FALSE, use_cpp=TRUE)   {
   
   
   if (is(X,"data.frame")) {
@@ -917,9 +1398,9 @@ QuickConsn <- function(X,Wk=NULL, FULL=FALSE,PS=FALSE)   {
         Wk<-matrix(Wk,ncol=1)
       }
       
-      cij <- combinpmatr(X,Wk)
+      cij <- combinpmatr(X,Wk, use_cpp=use_cpp)
     } else {
-      cij <- combinpmatr(X)
+      cij <- combinpmatr(X, use_cpp=use_cpp)
     }
     
     ##some adjustment made on march 2023
@@ -933,21 +1414,21 @@ QuickConsn <- function(X,Wk=NULL, FULL=FALSE,PS=FALSE)   {
     
     if (FULL==FALSE){
       
-    
+      
       if (sum(sign(cij+diag(N)))==length(cij)){
         print("Combined Input Matrix contains only positive values: the median ranking is the all-tie solution")
         cr <- matrix(rep(1,N), nrow=1)
-      
-        Sij <-scorematrix(cr)
-      
+        
+        Sij <-scorematrix(cr, use_cpp=use_cpp)
+        
         if (!is(Wk,"NULL")){
-        
+          
           TauX <- sum(cij*Sij) / ( sum(Wk)* (N*(N-1)) )
-        
+          
         } else {
-        
+          
           TauX <- sum(cij*Sij) / (  M*(N*(N-1)) )
-        
+          
         }
         
         colnames(cr) <- colnames(X)
@@ -958,40 +1439,40 @@ QuickConsn <- function(X,Wk=NULL, FULL=FALSE,PS=FALSE)   {
     
     R<-findconsensusBB(cij,FULL=callfull)
     R1<-(N+1)-R
-    consensusA <- BBconsensus(R,cij,FULL=callfull,PS=callps)$cons
-    consensusB <- BBconsensus(consensusA,cij,FULL=callfull,PS=callps)$cons
-    consensusC <- BBconsensus(R1,cij,FULL=callfull,PS=callps)$cons
-    consensusD <- BBconsensus(consensusC,cij,FULL=callfull,PS=callps)$cons
+    consensusA <- BBconsensus(R, cij, FULL=callfull, PS=callps, use_cpp=use_cpp)$cons
+    consensusB <- BBconsensus(consensusA, cij, FULL=callfull, PS=callps, use_cpp=use_cpp)$cons
+    consensusC <- BBconsensus(R1, cij, FULL=callfull, PS=callps, use_cpp=use_cpp)$cons
+    consensusD <- BBconsensus(consensusC, cij, FULL=callfull, PS=callps, use_cpp=use_cpp)$cons
     consensus <- unique(reordering(rbind(consensusA,consensusB,consensusC,consensusD)))
     howcons <- nrow(consensus)
     
-  #d=kemenyd(X,consensus$cons)
-  
-   Taux<-matrix(0,nrow(consensus),1)
-   for (k in 1:nrow(consensus)) {
+    #d=kemenyd(X,consensus$cons)
     
-     #Sij=scorematrix(t(as.matrix(consensus[k,])))
-     Sij<-scorematrix(matrix(consensus[k,],1,N))
+    Taux<-matrix(0,nrow(consensus),1)
+    for (k in 1:nrow(consensus)) {
+      
+      #Sij=scorematrix(t(as.matrix(consensus[k,])))
+      Sij<-scorematrix(matrix(consensus[k,],1,N), use_cpp=use_cpp)
+      
+      if (!is(Wk,"NULL")){
+        Taux[k,1]<-sum(cij*Sij) / ( sum(Wk)* (N*(N-1)) )
+      } else {
+        Taux[k,1]<-sum(cij*Sij) / (  M*(N*(N-1)) )
+      }
+      
+    }
     
-     if (!is(Wk,"NULL")){
-       Taux[k,1]<-sum(cij*Sij) / ( sum(Wk)* (N*(N-1)) )
-     } else {
-      Taux[k,1]<-sum(cij*Sij) / (  M*(N*(N-1)) )
-     }
-    
-   }
-  
-   if (howcons>1) {
-     nco<-which(Taux==max(Taux))
-     if (length(nco)>1) {
-       consensus<-consensus[nco,]
-       Taux<-matrix(rep(max(Taux),nrow(consensus)),nrow(consensus),1)
-     } else {
-       Taux<-max(Taux)
-      #consensus <- t(matrix(consensus[nco,]))
-       consensus <- matrix(consensus[nco,],1,N)
-     }
-   }
+    if (howcons>1) {
+      nco<-which(Taux==max(Taux))
+      if (length(nco)>1) {
+        consensus<-consensus[nco,]
+        Taux<-matrix(rep(max(Taux),nrow(consensus)),nrow(consensus),1)
+      } else {
+        Taux<-max(Taux)
+        #consensus <- t(matrix(consensus[nco,]))
+        consensus <- matrix(consensus[nco,],1,N)
+      }
+    }
   }
   colnames(consensus)<-colnames(X) 
   toc <- proc.time()[3]
@@ -1001,7 +1482,7 @@ QuickConsn <- function(X,Wk=NULL, FULL=FALSE,PS=FALSE)   {
 
 #------------------------------------------------------------------------------------
 
-FASTconsn <- function(X, Wk=NULL, maxiter=50, FULL=FALSE, PS=FALSE)   {
+FASTconsn <- function(X, Wk=NULL, maxiter=50, FULL=FALSE, PS=FALSE, use_cpp=TRUE)   {
   
   
   if (is(X,"data.frame")) {
@@ -1024,9 +1505,9 @@ FASTconsn <- function(X, Wk=NULL, maxiter=50, FULL=FALSE, PS=FALSE)   {
         Wk<-matrix(Wk,ncol=1)
       }
       
-      cij <- combinpmatr(X,Wk)
+      cij <- combinpmatr(X,Wk, use_cpp=use_cpp)
     } else {
-      cij <- combinpmatr(X)
+      cij <- combinpmatr(X, use_cpp=use_cpp)
     }
     
     ##some adjustment made on march 2023
@@ -1045,7 +1526,7 @@ FASTconsn <- function(X, Wk=NULL, maxiter=50, FULL=FALSE, PS=FALSE)   {
         print("Combined Input Matrix contains only positive values: the median ranking is the all-tie solution")
         cr <- matrix(rep(1,N), nrow=1)
         
-        Sij <-scorematrix(cr)
+        Sij <-scorematrix(cr, use_cpp=use_cpp)
         
         if (!is(Wk,"NULL")){
           
@@ -1077,9 +1558,9 @@ FASTconsn <- function(X, Wk=NULL, maxiter=50, FULL=FALSE, PS=FALSE)   {
         }
       }
       
-      consensus1 <- BBconsensus(R,cij, FULL)
+      consensus1 <- BBconsensus(R, cij, FULL, use_cpp=use_cpp)
       cons<-matrix(consensus1$cons,1,ncol(X))
-      consensus <- BBconsensus(cons,cij, FULL)
+      consensus <- BBconsensus(cons,cij, FULL,use_cpp=use_cpp)
       #print(cons)
       #print(R)
       #flush.console()
@@ -1091,19 +1572,19 @@ FASTconsn <- function(X, Wk=NULL, maxiter=50, FULL=FALSE, PS=FALSE)   {
       }
       
     }
-  
-  #d=kemenyd(X,consensus$cons)
-  
-   Taux<-matrix(0,nrow(CR),1)
-   for (k in 1:nrow(CR)) {
-     Sij<-scorematrix(matrix(CR[k,],1,ncol(X)))
-     if (!is.null(Wk)){
-       Taux[k,]<-sum(cij*Sij) / ( sum(Wk)* (N*(N-1)) )
-     } else {
-       Taux[k,]<-sum(cij*Sij) / (  M*(N*(N-1)) )
-     }
-   }
-  #}
+    
+    #d=kemenyd(X,consensus$cons)
+    
+    Taux<-matrix(0,nrow(CR),1)
+    for (k in 1:nrow(CR)) {
+      Sij<-scorematrix(matrix(CR[k,],1,ncol(X)), use_cpp=use_cpp)
+      if (!is.null(Wk)){
+        Taux[k,]<-sum(cij*Sij) / ( sum(Wk)* (N*(N-1)) )
+      } else {
+        Taux[k,]<-sum(cij*Sij) / (  M*(N*(N-1)) )
+      }
+    }
+    #}
     CR<-reordering(CR)
     indice<-which(Taux==max(Taux))
     Taux<-max(Taux)
@@ -1114,17 +1595,17 @@ FASTconsn <- function(X, Wk=NULL, maxiter=50, FULL=FALSE, PS=FALSE)   {
     if (!is(dim(CR),"NULL")) {
       Taux<-matrix(rep(Taux,nrow(CR)))
     }
-  
+    
     colnames(CR)<-colnames(X) 
   }
-    toc <- proc.time()[3]
-    eltime<-toc-tic
+  toc <- proc.time()[3]
+  eltime<-toc-tic
   return(list(Consensus=CR, Tau=Taux, Eltime=eltime) )
 }
 
 #------------------------------------------------------------------------------
 
-DECOR <- function(X,Wk=NULL,NP=15,L=100,FF=0.4,CR=0.9,FULL=FALSE){
+DECOR <- function(X,Wk=NULL,NP=15,L=100,FF=0.4,CR=0.9,FULL=FALSE, use_cpp=TRUE) {
   
   #check if X is a matrix
   if (is(X,"data.frame")) {
@@ -1151,11 +1632,11 @@ DECOR <- function(X,Wk=NULL,NP=15,L=100,FF=0.4,CR=0.9,FULL=FALSE){
         NJ<-sum(Wk)
       }
       
-      cij <- combinpmatr(X,Wk)
+      cij <- combinpmatr(X,Wk, use_cpp=use_cpp)
       
     } else {
       
-      cij <- combinpmatr(X)
+      cij <- combinpmatr(X, use_cpp=use_cpp)
       NJ<-nrow(X)
     }
     
@@ -1174,7 +1655,7 @@ DECOR <- function(X,Wk=NULL,NP=15,L=100,FF=0.4,CR=0.9,FULL=FALSE){
         print("Combined Input Matrix contains only positive values: the median ranking is the all-tie solution")
         cr <- matrix(rep(1,N), nrow=1)
         
-        Sij <-scorematrix(cr)
+        Sij <-scorematrix(cr, use_cpp=use_cpp)
         
         if (!is(Wk,"NULL")){
           
@@ -1189,13 +1670,13 @@ DECOR <- function(X,Wk=NULL,NP=15,L=100,FF=0.4,CR=0.9,FULL=FALSE){
         colnames(cr) <- colnames(X)
         return(list(Consensus=cr, Tau=TauX, Eltime=NA))
       }
-    
+      
       
     }
     #end adjustment
     
     
-    COR<-DECORcore(cij,NJ,NP,L,FF,CR,FULL)
+    COR<-DECORcore(cij,NJ,NP,L,FF,CR,FULL,use_cpp=use_cpp)
     
     Consensus<-COR$ConsR
     TauX<-COR$Tau
@@ -1213,7 +1694,7 @@ DECOR <- function(X,Wk=NULL,NP=15,L=100,FF=0.4,CR=0.9,FULL=FALSE){
 
 #-------------------------------------------------------------------------------------------------
 
-DECORcore <- function(cij,NJ,NP=15,L=50,FF=0.4,CR=0.9,FULL=FALSE){
+DECORcore <- function(cij,NJ,NP=15,L=50,FF=0.4,CR=0.9,FULL=FALSE,use_cpp=TRUE){
   
   # DECoR Differential Evolution for COnsensus Ranking
   
@@ -1268,9 +1749,12 @@ DECORcore <- function(cij,NJ,NP=15,L=50,FF=0.4,CR=0.9,FULL=FALSE){
   costs       <- matrix(0,1,NP)  # array of initial costs
   
   # initialize the population (random selection)
-  population <- matrix(0,(NP-1),N)
+  #
+  # population <- matrix(0,(NP-1),N)
+  # 
+  # for (k in 1:(NP-1)){ population[k,] <- sample(N)}
   
-  for (k in 1:(NP-1)){ population[k,] <- sample(N)}
+  population <- t(replicate(NP-1, sample(N)))
   
   
   # insert a very good candidate
@@ -1288,17 +1772,38 @@ DECORcore <- function(cij,NJ,NP=15,L=50,FF=0.4,CR=0.9,FULL=FALSE){
   taos<-costs
   for (i in 1:NP){
     
-    COTA<-combincost(population[i,],cij,NJ)
+    COTA<-combincost(population[i,],cij,NJ, use_cpp=use_cpp)
     costs[i]<-COTA$cp
     taos[i]<-COTA$tp
   }
   
-  # store the best individual and cost of initial population
-  bestc <- min(costs)
-  bestind <- which(costs==min(costs))
-  bestT <- max(taos)
-  besti<-population[bestind,]
+  ##--------------------------
+  #
+  # # store the best individual and cost of initial population
+  # bestc <- min(costs)
+  # bestind <- which(costs==min(costs))
+  # bestT <- max(taos)
+  # besti<-population[bestind,]
+  # 
+  # 
+  # # generation index
+  # g <- 2
+  ##---------------------------------
   
+  # store the best individual and cost of initial population
+  # PRE-ALLOCATE arrays for best tracking
+  # Initial size: conservative estimate (L * 10 should be more than enough)
+  # Will expand if needed (rare case)
+  initial_size <- max(100, L * 10)
+  bestc_vec <- numeric(initial_size)
+  bestT_vec <- numeric(initial_size)
+  besti_mat <- matrix(0, initial_size, N)
+  
+  # Store initial generation (g=1)
+  bestc_vec[1] <- min(costs)
+  bestind <- which(costs == min(costs))
+  bestT_vec[1] <- max(taos)
+  besti_mat[1, ] <- population[bestind, ]
   
   # generation index
   g <- 2
@@ -1332,7 +1837,7 @@ DECORcore <- function(cij,NJ,NP=15,L=50,FF=0.4,CR=0.9,FULL=FALSE){
       }
       
       # apply selection, hold the best individual
-      COTAN <- combincost(evolution,cij,NJ)
+      COTAN <- combincost(evolution,cij,NJ, use_cpp=use_cpp)
       cost_new<-COTAN$cp
       ta_new<-COTAN$tp
       
@@ -1345,24 +1850,51 @@ DECORcore <- function(cij,NJ,NP=15,L=50,FF=0.4,CR=0.9,FULL=FALSE){
       
     }
     
+    ##-------------------------------------------------
+    # # store the best individual of current generation
+    # 
+    # bestco <- min(costs)
+    # bestc<-rbind(bestc,bestco)
+    # bestind <- which.min(costs)
+    # bestTa <- max(taos)
+    # bestT<-rbind(bestT,bestTa)
+    # bestin<-population[bestind,]
+    # besti<-rbind(besti,bestin)
+    # 
+    ##----------------------------------
+    
     # store the best individual of current generation
     
-    bestco <- min(costs)
-    bestc<-rbind(bestc,bestco)
-    bestind <- which.min(costs)
-    bestTa <- max(taos)
-    bestT<-rbind(bestT,bestTa)
-    bestin<-population[bestind,]
-    besti<-rbind(besti,bestin)
+    # Check if we need to expand arrays (rare, but safe)
+    if (g > length(bestc_vec)) {
+      # Double the size
+      new_size <- length(bestc_vec) * 2
+      
+      # Expand bestc_vec
+      tmp <- numeric(new_size)
+      tmp[1:length(bestc_vec)] <- bestc_vec
+      bestc_vec <- tmp
+      
+      # Expand bestT_vec
+      tmp <- numeric(new_size)
+      tmp[1:length(bestT_vec)] <- bestT_vec
+      bestT_vec <- tmp
+      
+      # Expand besti_mat
+      tmp <- matrix(0, new_size, N)
+      tmp[1:nrow(besti_mat), ] <- besti_mat
+      besti_mat <- tmp
+    }
     
+    bestind <- which.min(costs)
+    bestc_vec[g] <- costs[bestind]
+    bestT_vec[g] <- max(taos)
+    besti_mat[g, ] <- population[bestind, ]
     
     # check if this generation improved solutions
-    if (bestc[g] == bestc[(g-1)]){
-      
-      no_gain <- no_gain + 1}
-    
-    else{
-      
+    if (bestc_vec[g] == bestc_vec[(g-1)]){
+      no_gain <- no_gain + 1
+    } else {
       no_gain <- 0
     }
     
@@ -1372,35 +1904,91 @@ DECORcore <- function(cij,NJ,NP=15,L=50,FF=0.4,CR=0.9,FULL=FALSE){
     
   } #end while
   
+  ##----------------------------------
+  # Trim pre-allocated arrays to actual generations used
+  actual_gens <- g - 1  # g already incremented at the end of the loop
+  bestc <- bestc_vec[1:actual_gens]
+  bestT <- bestT_vec[1:actual_gens]
+  besti <- besti_mat[1:actual_gens, , drop=FALSE]
+  
+  ##-----------------------------------
+  #
+  ##----------------------------------------------------
+  # # select ALL the best solutions
+  # 
+  # indexes <- which(bestc==min(bestc))
+  # cat("DEBUG: Number of best solutions =", length(indexes), "\n")  # only for bebugging
+  # if (FULL==TRUE){ #if1
+  #   
+  #   if (length(indexes)==1){ #if2
+  #     bests<-childclosint(matrix(besti[indexes,],1,N))}
+  #   else{
+  #     bests<-matrix(0,length(indexes),N)
+  #     for (j in 1:length(indexes)){
+  #       bests[j,]<-childclosint(besti[indexes[j],])
+  #     } #end for
+  #   } #end if2
+  #   
+  # } else { #if FULL = FALSE
+  #   
+  #   if(length(indexes)==1){
+  #     
+  #     bests <- reordering(matrix(besti[indexes,],1,N))
+  #     
+  #   } else {
+  #     
+  #     bests <- reordering(besti[indexes,])}
+  #   
+  # } #end if1
+  # 
+  # avgTau <- bestT[indexes]
+  # 
+  # ConsR<-unique(bests)
+  ##------------------------------------
   # select ALL the best solutions
   
   indexes <- which(bestc==min(bestc))
-  if (FULL==TRUE){ #if1
+  #cat("DEBUG: Number of best indexes =", length(indexes), "\n")  # Debug
+  
+  # Extract best individuals
+  best_individuals <- besti[indexes, , drop=FALSE]
+  
+  # Remove duplicates BEFORE processing (KEY OPTIMIZATION!)
+  unique_individuals <- unique(best_individuals)
+  #cat("DEBUG: Number of UNIQUE best individuals =", nrow(unique_individuals), "\n")  # Debug
+  
+  if (FULL==TRUE){ 
     
-    if (length(indexes)==1){ #if2
-      bests<-childclosint(matrix(besti[indexes,],1,N))}
-    else{
-      bests<-matrix(0,length(indexes),N)
-      for (j in 1:length(indexes)){
-        bests[j,]<-childclosint(besti[indexes[j],])
-      } #end for
-    } #end if2
-    
-  } else { #if FULL = FALSE
-    
-    if(length(indexes)==1){
-      
-      bests <- reordering(matrix(besti[indexes,],1,N))
-      
+    # Process only UNIQUE individuals
+    if (nrow(unique_individuals)==1){
+      bests <- childclosint(unique_individuals[1,])
+      bests <- matrix(bests, 1, N)
     } else {
-      
-      bests <- reordering(besti[indexes,])}
+      bests <- matrix(0, nrow(unique_individuals), N)
+      for (j in 1:nrow(unique_individuals)){
+        bests[j,] <- childclosint(unique_individuals[j,])
+      }
+    }
     
-  } #end if1
+  } else { # FULL = FALSE
+    
+    # For FULL=FALSE, just reorder unique individuals
+    if (nrow(unique_individuals)==1){
+      bests <- reordering(matrix(unique_individuals[1,], 1, N))
+    } else {
+      bests <- reordering(unique_individuals)
+    }
+    
+  }
   
   avgTau <- bestT[indexes]
   
-  ConsR<-unique(bests)
+  ConsR <- unique(bests)  # Final unique (in case childclosint produces duplicates)
+  
+  #cat("DEBUG: Final unique solutions =", nrow(ConsR), "\n")  # Debug
+  
+  Tau <- matrix(rep(avgTau[1], nrow(ConsR)), nrow(ConsR), 1)
+  
   #check
   # print(nrow(bests))
   # print(avgTau)
@@ -1417,7 +2005,7 @@ DECORcore <- function(cij,NJ,NP=15,L=50,FF=0.4,CR=0.9,FULL=FALSE){
 
 #----------------------------------------------------------------------------------------------------------------
 
-FASTDECORn <- function(X,Wk=NULL,maxiter=10,NP=15,L=100,FF=0.4,CR=0.9,FULL=FALSE,PS=TRUE){
+FASTDECORn <- function(X,Wk=NULL,maxiter=10,NP=15,L=100,FF=0.4,CR=0.9,FULL=FALSE,PS=TRUE,use_cpp=TRUE){
   
   #check if X is a matrix
   if (is(X,"data.frame")) {
@@ -1445,11 +2033,11 @@ FASTDECORn <- function(X,Wk=NULL,maxiter=10,NP=15,L=100,FF=0.4,CR=0.9,FULL=FALSE
         NJ<-sum(Wk)
       }
       
-      cij <- combinpmatr(X,Wk)
+      cij <- combinpmatr(X,Wk,use_cpp=use_cpp)
       
     } else {
       
-      cij <- combinpmatr(X)
+      cij <- combinpmatr(X,use_cpp=use_cpp)
       NJ<-nrow(X)
     }
     
@@ -1468,7 +2056,7 @@ FASTDECORn <- function(X,Wk=NULL,maxiter=10,NP=15,L=100,FF=0.4,CR=0.9,FULL=FALSE
         print("Combined Input Matrix contains only positive values: the median ranking is the all-tie solution")
         cr <- matrix(rep(1,N), nrow=1)
         
-        Sij <-scorematrix(cr)
+        Sij <-scorematrix(cr, use_cpp=use_cpp)
         
         if (!is(Wk,"NULL")){
           
@@ -1492,7 +2080,7 @@ FASTDECORn <- function(X,Wk=NULL,maxiter=10,NP=15,L=100,FF=0.4,CR=0.9,FULL=FALSE
     taos<-0
     
     for (iter in 1:maxiter){
-      COR<-DECORcore(cij,NJ,NP,L,FF,CR,FULL)
+      COR<-DECORcore(cij,NJ,NP,L,FF,CR,FULL,use_cpp=use_cpp)
       
       sol<-rbind(sol,COR$ConsR)
       taos<-rbind(taos,COR$Tau)
@@ -1510,28 +2098,28 @@ FASTDECORn <- function(X,Wk=NULL,maxiter=10,NP=15,L=100,FF=0.4,CR=0.9,FULL=FALSE
       
     }
     
-  #}
-  
+    #}
+    
     sol<-sol[-1,]
     taos<-matrix(taos[-1],(length(taos)-1),1)
-  
+    
     if (is(nrow(sol),"NULL")){sol<-matrix(sol,1,N)}
-  
+    
     bestindex<-which(taos==max(taos))
     sol<-sol[bestindex,]
     taos<-max(taos)
-  
+    
     if (is(nrow(sol),"NULL")){
       sol<-matrix(sol,1,N)
       Consensus<-sol
     } else {
       Consensus<-unique(sol)
     }
-  
+    
     if (is(nrow(Consensus),"NULL")){
       Consensus<-matrix(Consensus,1,N)
     }
-  
+    
     TauX<-matrix(rep(taos),nrow(Consensus),1)
     colnames(Consensus)<-colnames(X) 
     row.names(Consensus)<-NULL
@@ -1545,62 +2133,91 @@ FASTDECORn <- function(X,Wk=NULL,maxiter=10,NP=15,L=100,FF=0.4,CR=0.9,FULL=FALSE
 #----------------------------------------------------------------------
 
 
-childclosint<-function(r){
-  
-  # CHILDCLOSINT Transform the vector into ranking for DECoR
-  #
-  #  Closest integer approach is used: the elements of x are rounded
-  # to the closest integer. Then check if any solution exists outside 
-  # of the bounds (and get it back inside the bounds randomly).
-  # Finally repair the solution if repetitions exist.
-  #
-  # Random approach is proven to be effective in:
-  #   "Enhanced Differential Evolution..." by Davendra and Onwubolu
-  #
-  # $Author: Giulio Mazzeo $    $Email: giuliomazzeo@gmail.com $
-  
-  
+# childclosint<-function(r){
+# 
+#   # CHILDCLOSINT Transform the vector into ranking for DECoR
+#   #
+#   #  Closest integer approach is used: the elements of x are rounded
+#   # to the closest integer. Then check if any solution exists outside
+#   # of the bounds (and get it back inside the bounds randomly).
+#   # Finally repair the solution if repetitions exist.
+#   #
+#   # Random approach is proven to be effective in:
+#   #   "Enhanced Differential Evolution..." by Davendra and Onwubolu
+#   #
+#   # $Author: Giulio Mazzeo $    $Email: giuliomazzeo@gmail.com $
+# 
+# 
+#   D <- length(r)
+# 
+#   # closest integer
+#   x <- round(r)
+# 
+#   # correct out of bound
+#   for (i in 1:D){
+# 
+# 
+#     if (x[i]>D | x[i]<1){
+# 
+#       r <- sample(D)
+# 
+#       x[i] <- r[1]
+# 
+#     }
+# 
+# 
+#     # correct duplicates
+# 
+# 
+# 
+#     C <- setdiff(union(x,1:D),intersect(x,1:D))
+# 
+#     if (length(C)==0){
+# 
+#       x<-x
+# 
+#     }
+#     else
+#     {
+#       U <- unique(x)
+#       id <- which(!duplicated(x))
+#       ix <- setdiff(union(id,1:D),intersect(id,1:D))
+#       x[ix] <- C[sample(length(ix))]
+# 
+#     } #end else
+# 
+#   } #end for
+#   x
+# } #end function
+
+childclosint <- function(r){
   D <- length(r)
-  
-  # closest integer
   x <- round(r)
-  
-  # correct out of bound
-  for (i in 1:D){
-    
-    
-    if (x[i]>D | x[i]<1){
-      
-      r <- sample(D)
-      
-      x[i] <- r[1]
-      
+
+  # STEP 1: Correggi out-of-bound (vettorizzato)
+  out_of_bounds <- (x > D | x < 1)
+  if (any(out_of_bounds)) {
+    n_oob <- sum(out_of_bounds)
+    x[out_of_bounds] <- sample(D, n_oob, replace = TRUE)
+  }
+
+  # STEP 2: Correggi duplicati UNA VOLTA SOLA (fuori dal loop)
+  dups <- duplicated(x)
+  if (any(dups)) {
+    dup_idx <- which(dups)
+    available <- setdiff(1:D, x)
+    n_dups <- length(dup_idx)
+
+    if (length(available) >= n_dups) {
+      x[dup_idx] <- sample(available, n_dups)
+    } else {
+      # Edge case: più duplicati che valori disponibili
+      x[dup_idx] <- sample(available, n_dups, replace = TRUE)
     }
-    
-    
-    # correct duplicates
-    
-    
-    
-    C <- setdiff(union(x,1:D),intersect(x,1:D))
-    
-    if (length(C)==0){
-      
-      x<-x
-      
-    }
-    else
-    {
-      U <- unique(x)
-      id <- which(!duplicated(x)) 
-      ix <- setdiff(union(id,1:D),intersect(id,1:D))
-      x[ix] <- C[sample(length(ix))]
-      
-    } #end else
-    
-  } #end for
+  }
+
   x
-} #end function
+}
 
 #----------------------------------------------------------------
 
@@ -1617,28 +2234,42 @@ childtie <- function( r ){
 
 #--------------------------------------------------------------
 
-crossover<-function(x,v,CR){
-  
-  
-  if (!is(x,"matrix")){x<-matrix(x,1,length(x))}
-  
+# crossover<-function(x,v,CR){
+# 
+# 
+#   if (!is(x,"matrix")){x<-matrix(x,1,length(x))}
+# 
+#   D <- ncol(x)
+# 
+#   u <- matrix(0,1,D)
+# 
+#   for (i in 1:D){
+# 
+#     if (runif(1) > CR){
+# 
+#       u[i] <- v[i]
+#     }
+#     else{
+# 
+#       u[i] <- x[i]
+# 
+#     }
+#   }
+#   u
+# }
+
+crossover <- function(x, v, CR){
+  if (!is(x,"matrix")){x <- matrix(x, 1, length(x))}
+
   D <- ncol(x)
-  
-  u <- matrix(0,1,D)
-  
-  for (i in 1:D){
-    
-    if (runif(1) > CR){
-      
-      u[i] <- v[i]
-    }
-    else{
-      
-      u[i] <- x[i]
-      
-    }
-  }
-  u
+
+  # Genera tutti i random in una volta (vettorizzato)
+  mask <- runif(D) > CR
+
+  # Usa ifelse vettorizzato
+  u <- ifelse(mask, v, x)
+
+  matrix(u, 1, D)
 }
 
 #---------------------------------------------------------------
@@ -1651,14 +2282,20 @@ mutaterand1<-function(X,FF,i){
   
   a <- sample(D)
   
-  for (j in 1:3){
-    
-    if (a[j]==i){
-      
-      a[j]<-a[4]
-      
-    }
-    
+  # for (j in 1:3){
+  #   
+  #   if (a[j]==i){
+  #     
+  #     a[j]<-a[4]
+  #     
+  #   }
+  #   
+  # }
+  
+  # Replace any occurrence of i with a[4] (vectorized)
+  mask <- (a[1:3] == i)
+  if (any(mask)) {
+    a[1:3][mask] <- a[4]
   }
   
   r1 <- a[1]
@@ -1675,7 +2312,7 @@ mutaterand1<-function(X,FF,i){
 
 
 
-BBFULLn <- function(X,Wk=NULL,PS=TRUE)  {
+BBFULLn <- function(X,Wk=NULL,PS=TRUE,use_cpp=TRUE)  {
   #Branch and Bound algorithm to find median ranking in the space of full rankings
   #X is a data matrix in which the rows are the judges and the columns indicates the objects
   #Wk is the vector of weigths
@@ -1699,9 +2336,9 @@ BBFULLn <- function(X,Wk=NULL,PS=TRUE)  {
         Wk<-matrix(Wk,ncol=1)
       }
       
-      cij <- combinpmatr(X,Wk)
+      cij <- combinpmatr(X,Wk, use_cpp=use_cpp)
     } else {
-      cij <- combinpmatr(X)
+      cij <- combinpmatr(X,use_cpp=use_cpp)
     }
     
     if (sum(cij==0)==nrow(cij)^2){
@@ -1714,16 +2351,16 @@ BBFULLn <- function(X,Wk=NULL,PS=TRUE)  {
     } 
     
     R<-findconsensusBB(cij,FULL=TRUE)
-    cons1<-BBconsensus(R,cij,FULL=TRUE)
+    cons1<-BBconsensus(R,cij,FULL=TRUE,use_cpp=use_cpp)
     consensus1<-cons1$cons
     Po<-cons1$pen
-    consensus<-BBconsensus2(consensus1,cij,Po,PS,FULL=TRUE)
+    consensus<-BBconsensus2(consensus1,cij,Po,PS,FULL=TRUE,use_cpp=use_cpp)
   }
   
   
   if (nrow(consensus)==1) {
     
-    Sij<-scorematrix(consensus)
+    Sij<-scorematrix(consensus, use_cpp=use_cpp)
     
     if (!is(Wk,"NULL")){
       TauX<-sum(cij*Sij) / ( sum(Wk)* (N*(N-1)) )
@@ -1737,7 +2374,7 @@ BBFULLn <- function(X,Wk=NULL,PS=TRUE)  {
     
     for (k in 1:nrow(consensus)) {
       
-      Sij<-scorematrix(t(matrix(consensus[k,])))
+      Sij<-scorematrix(t(matrix(consensus[k,])), use_cpp=use_cpp)
       
       if (!is(Wk,"NULL")) {
         
@@ -1761,14 +2398,14 @@ BBFULLn <- function(X,Wk=NULL,PS=TRUE)  {
 
 #-------------------------------------------------------------------------------
 
-combincost <- function(ranking,cij,M){
+combincost <- function(ranking,cij,M, use_cpp=TRUE) {
   
   
   
   if (!is(ranking,"matrix")){ranking<-matrix(ranking,1,length(ranking))}
   
   N <- ncol(ranking)
-  sij <- scorematrix(ranking)
+  sij <- scorematrix(ranking, use_cpp=use_cpp)
   
   # max distance
   maxdist <- (N*(N-1))
@@ -1781,12 +2418,3 @@ combincost <- function(ranking,cij,M){
   
   return(list(tp=t,cp=c))
 }
-
-
-
-
-
-
-  
-
-  

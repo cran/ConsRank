@@ -22,13 +22,20 @@ the permutation polytope
 Plot rankings a permutation polytope that is the geometrical space of preference rankings. The plot is available for 3 or for 4 objects
 }
 \details{
-polyplot() plots the universe of 3 objecys. polyplot(nobj=4) plots the universe of 4 objecys.
+polyplot() plots the universe of 3 objects. polyplot(nobj=4) plots the universe of 4 objects.
+Note: 4-object plots require the 'rgl' package to be installed.
 }
 \examples{
+\dontrun{
 polyplot()
-#polyplot(nobj=4)
+}
+
+\dontrun{
+# Requires rgl package
+polyplot(nobj=4)
 data(BU)
 polyplot(BU[,1:3],Wk=BU[,4])
+}
 
 }
 \references{

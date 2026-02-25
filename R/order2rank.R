@@ -6,6 +6,7 @@
 #' @param X A ordering or a matrix containing orderings
 #' @param TO symbol indicating the start of a set of items ranked in a tie
 #' @param TC symbol indicating the end of a set of items ranked in a tie
+#' @param NAs symbol indicating missing ranked object. Can be any symbol in the original ordering matrix
 #'
 #' 
 #' @return a ranking or a matrix of rankings:
@@ -26,7 +27,7 @@
 
 
 
-order2rank=function(X,TO="{",TC="}"){
+order2rank <- function(X,TO="{",TC="}", NAs="NA"){
   #Given an ordering, it is transformed to a ranking 
   #input: 
   #X:  an ordering matrix or an ordering vector
@@ -34,7 +35,7 @@ order2rank=function(X,TO="{",TC="}"){
   #    Any symbol can be used, default is "{".
   #TC: symbol that denotes the end of a block of ties. 
   #    Any symbol can be used, default is "}".  
-  #
+  #NAs: symbol indicating NaNs. Can be any symbol in the original data matrix
   #IMPORTANT: check which symbol denotes tied rankings
   #
   #OUTPUT: the ranking matrix (or vector)
@@ -55,23 +56,32 @@ order2rank=function(X,TO="{",TC="}"){
   Xl<-gsub(TO, "", Xl,fixed=TRUE)
   Xl<-gsub(TC, "", Xl,fixed=TRUE)
   
-  if (r==1){items<-as.character(sort(Xl))}else{items<-as.character(sort(Xl[1,]))}
+  all_values <- unique(as.vector(Xl))
+  items <- sort(all_values[all_values != "NA"])
+  
+  # if (r==1){items<-as.character(sort(Xl))}else{items<-as.character(sort(Xl[1,]))}
   R<-matrix(NA,r,c)
   colnames(R)<-items
   Rref<-seq(1:c)
   
   for (i in 1:r){
     if (r==1){ #if x is an ordering vector
-      openb<-unlist(gregexpr(pattern = TO, X, fixed=TRUE))
+      xx <- X[X != NAs]
+      openb<-unlist(gregexpr(pattern = TO, xx, fixed=TRUE))
       openb[openb>0]<-1 #aggiunto il 27/09/2021
-      closeb<-unlist(gregexpr(pattern = TC, X, fixed=TRUE))
+      closeb<-unlist(gregexpr(pattern = TC, xx, fixed=TRUE))
       closeb[closeb>0]<-2 #aggiunto il 27/09/2021
+      
+      newc <- c-length(xx)
+      if (newc > 0){
+        c <- length(xx)
+      }
       
       if(sum(rowSums(cbind(openb,closeb))==-2)==c){ #if there are no ties
         
         for(j in 1:c){
           
-          R[which(items==X[j])]<-j
+          R[which(items==xx[j])]<-j
           
         }
         
@@ -125,9 +135,17 @@ order2rank=function(X,TO="{",TC="}"){
       
     } else { #if X is an ordering matrix
       
-      openb<-unlist(gregexpr(pattern =TO, X[i,], fixed=TRUE))
+      #aggiungo questo
+      xx <- X[i, ]
+      xx <- xx[xx != NAs]
+      newc <- c-length(xx)
+      if (newc > 0){
+        c <- length(xx)
+      }
+      
+      openb<-unlist(gregexpr(pattern =TO, xx, fixed=TRUE))
       openb[openb>0]<-1 #aggiunto il 27/09/2021
-      closeb<-unlist(gregexpr(pattern =TC, X[i,], fixed=TRUE))
+      closeb<-unlist(gregexpr(pattern =TC, xx, fixed=TRUE))
       closeb[closeb>0]<-2 #aggiunto il 27/09/2021
       
       if(sum(rowSums(cbind(openb,closeb))==-2)==c){ #if there are no ties
@@ -184,10 +202,13 @@ order2rank=function(X,TO="{",TC="}"){
         
         
         
-      }
+      } #end else
+      
+      
       
     }# end if X is a matrix
     
+    c <- ncol(R) #reset c for next iteration
     
   } #end principal loop (for i=1:r)
   

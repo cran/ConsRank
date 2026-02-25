@@ -15,8 +15,15 @@ Design matrix
 \description{
 Define a design matrix to compute Kemeny distance
 }
+\details{
+This function now uses an optimized C++ implementation (\code{\link{kemenydesign_cpp}})
+  for improved performance. The original R implementation is preserved for reference.
+}
 \references{
 D'Ambrosio, A. (2008). Tree based methods for data editing and preference rankings. Unpublished PhD Thesis. Universita' degli Studi di Napoli Federico II.
+}
+\seealso{
+\code{\link{kemenydesign_cpp}}
 }
 \author{
 Antonio D'Ambrosio \email{antdambr@unina.it}

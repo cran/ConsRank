@@ -42,58 +42,77 @@ rank2order <- function (X,items=NULL,TO="{",TC="}",itemtype="L"){
   #OUTPUT: the ordering matrix (or vector)
   
   
-  if(is(nrow(X),"NULL")){
-    r<-1
-    c<-length(X)
-    X<-matrix(X,r,c)
+  if(is(nrow(X), "NULL")){
+    r <- 1
+    c <- length(X)
+    X <- matrix(X, r, c)
   } else {
-    r<-nrow(X)
-    c<-ncol(X)
+    r <- nrow(X)
+    c <- ncol(X)
   }
   
-  if(is(items,"NULL")){
-    
-    if(itemtype=="L"){
-      
-      items<-paste("O",seq(1:c),sep="")
-      
+  if(is(items, "NULL")){
+    if(itemtype == "L"){
+      items <- paste("O", seq(1:c), sep="")
     } else {
-      
-      items<-as.character(seq(1:c))
+      items <- as.character(seq(1:c))
     }
   }
   
-  out<-matrix(0,r,c)
+  out <- matrix(0, r, c)
   
   for (i in 1:r){
     
-    ord <- rank(X[i,])
-    orders <- tapply(items, ord, sort)
-    check<-FALSE
-    j<-1
-    h<-1
+    # Identifica posizioni con NA
+    na_mask <- is.na(X[i,])
+    n_na <- sum(na_mask)
     
-    while(check==FALSE) {
+    # rank() con na.last="keep" esclude NA dal ranking
+    ord <- rank(X[i,], na.last="keep")
+    
+    # Rimuovi NA dal vettore di items per il tapply
+    valid_items <- items[!na_mask]
+    valid_ord <- ord[!na_mask]
+    
+    # Crea ordering solo per items validi
+    orders <- tapply(valid_items, valid_ord, sort)
+    
+    # Costruisci ordering
+    check <- FALSE
+    j <- 1
+    h <- 1
+    
+    while(check == FALSE) {
       
       if (length(orders[[h]]) > 1) {
-        
-        k<-length(orders[[h]])
-        nams<-matrix(orders[[h]],1,k)
-        nams[1]<-paste(TO, nams[1], sep="")
-        nams[k]<-paste(nams[k], TC, sep="")
-        passo<-seq(j,(j+k-1))
-        out[i,passo]<-nams
-        j<-passo[k]+1
-        h<-h+1
+        k <- length(orders[[h]])
+        nams <- matrix(orders[[h]], 1, k)
+        nams[1] <- paste(TO, nams[1], sep="")
+        nams[k] <- paste(nams[k], TC, sep="")
+        passo <- seq(j, (j+k-1))
+        out[i, passo] <- nams
+        j <- passo[k] + 1
+        h <- h + 1
       } else {
-        out[i,j] <- paste(orders[[h]])#, collapse = " ")
-        j<-j+1
-        h<-h+1
+        out[i, j] <- paste(orders[[h]])
+        j <- j + 1
+        h <- h + 1
       }
       
-      if(h>length(orders)){check<-TRUE}
+      if(h > length(orders)){check <- TRUE}
       
-    } #end for j
+    } #end while
+    
+    # ═══════════════════════════════════════════════════════════════
+    # AGGIUNGI solo "NA" alla fine (senza nome item)
+    # ═══════════════════════════════════════════════════════════════
+    
+    if (n_na > 0) {
+      for (k in 1:n_na) {
+        out[i, j] <- "NA"
+        j <- j + 1
+      }
+    }
     
   } #end for i
   

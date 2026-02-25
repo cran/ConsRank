@@ -15,7 +15,8 @@ consrank(
   gl = 100,
   ff = 0.4,
   cr = 0.9,
-  proc = FALSE
+  proc = FALSE,
+  use_cpp = TRUE
 )
 }
 \arguments{
@@ -40,6 +41,8 @@ consrank(
 \item{cr}{For DECOR algorithm only: the crossover range. Must be in [0,1]. cr=0.9 is the default option.}
 
 \item{proc}{For BB algorithm only: proc=TRUE allows the branch and bound algorithm to work in difficult cases, i.e. when the number of objects is larger than 15 or 25. proc=FALSE is the default option}
+
+\item{use_cpp}{Logical. If TRUE (default), uses C++ implementation for faster computation. If FALSE, uses the R implementation.}
 }
 \value{
 a "list" containing the following components:

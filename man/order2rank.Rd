@@ -4,7 +4,7 @@
 \alias{order2rank}
 \title{Given an ordering, it is transformed to a ranking}
 \usage{
-order2rank(X, TO = "{", TC = "}")
+order2rank(X, TO = "{", TC = "}", NAs = "NA")
 }
 \arguments{
 \item{X}{A ordering or a matrix containing orderings}
@@ -12,6 +12,8 @@ order2rank(X, TO = "{", TC = "}")
 \item{TO}{symbol indicating the start of a set of items ranked in a tie}
 
 \item{TC}{symbol indicating the end of a set of items ranked in a tie}
+
+\item{NAs}{symbol indicating missing ranked object. Can be any symbol in the original ordering matrix}
 }
 \value{
 a ranking or a matrix of rankings:
